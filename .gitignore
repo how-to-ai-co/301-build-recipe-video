@@ -1,0 +1,35 @@
+.venv/
+.cache/
+node_modules/
+**/.env
+**/.env.*
+!**/.env.example
+__pycache__/
+*.pyc
+.DS_Store
+.setup-check/
+.setup-model.log
+output/
+cinematic/projects/
+cinematic/audio/
+cinematic/guide/
+.venv-df/
+
+# Local state and runtime files
+engine/public/yap/
+engine/.setup-check/
+review-panel/notes.json
+review-panel/server.log
+review-panel/server.pid
+review-panel/scripts/
+.next/
+.vercel/
+*.tsbuildinfo
+next-env.d.ts
+.claude/launch.json
+.claude/settings.local.json
+
+# Reference videos (engine/scripts/reference.py): study-only media never goes in git.
+# Only each breakdown.md (our own notes and numbers) and the README are kept.
+references/videos/*/*
+!references/videos/*/breakdown.md

@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Motion</title>
+<!-- MP4 muxer (pinned). Only Export MP4 needs it; everything else works offline. -->
+<script src="https://cdn.jsdelivr.net/npm/mp4-muxer@5.2.2/build/mp4-muxer.js"></script>
+<style>
+  :root { color-scheme: dark; }
+  html, body { margin: 0; background: #0b0b0c; color: #e8e6e1; font: 14px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  #bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 10px 16px; position: sticky; top: 0; background: #0b0b0c; z-index: 1; }
+  button, select { font: inherit; color: inherit; background: #222326; border: 1px solid #3a3b40; border-radius: 6px; padding: 7px 12px; cursor: pointer; }
+  button:hover { background: #2c2d31; }
+  button:disabled { opacity: .5; cursor: default; }
+  #export { background: #e8e6e1; color: #0b0b0c; border-color: #e8e6e1; font-weight: 600; }
+  #scrub { flex: 1 1 160px; min-width: 120px; }
+  #time { font-variant-numeric: tabular-nums; min-width: 64px; }
+  label { display: flex; gap: 4px; align-items: center; }
+  #msg { padding: 0 16px; min-height: 20px; color: #b9b6ae; }
+  #msg.err { color: #ff8a7a; }
+  #stage { display: flex; justify-content: center; padding: 8px 16px 24px; }
+  #c { display: block; max-width: 100%; max-height: calc(100vh - 120px); width: auto; height: auto; box-shadow: 0 0 0 1px #2a2b2f; }
+</style>
+</head>
+<body>
+<div id="bar">
+  <button id="play">Play</button>
+  <input id="scrub" type="range" min="0" max="1" step="0.001" value="0" aria-label="Time">
+  <span id="time">0.00s</span>
+  <select id="size" aria-label="Size">
+    <option value="1080x1920">9:16 · 1080×1920</option>
+    <option value="1080x1350">4:5 · 1080×1350</option>
+    <option value="1080x1080">1:1 · 1080×1080</option>
+    <option value="1920x1080">16:9 · 1920×1080</option>
+  </select>
+  <label><input id="sound" type="checkbox" checked> Sound</label>
+  <button id="sheet">Contact sheet</button>
+  <button id="export">Export MP4</button>
+</div>
+<div id="msg"></div>
+<div id="stage"><canvas id="c" width="1080" height="1920"></canvas></div>
+
+<script>
+// ---------------------------------------------------------------------------
+// Toolkit. Leave this part alone.
+// ---------------------------------------------------------------------------
+const canvas = document.getElementById('c');
+const g = canvas.getContext('2d');
+let W = 1080, H = 1920, u = 1;          // u = 1 at 1080 on the short side
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const lerp = (a, b, s) => a + (b - a) * s;
+
+// Closed-form damped spring, 0 → 1. A pure function of time.
+function spring(t, k = 170, d = 26) {
+  if (t <= 0) return 0;
+  const w0 = Math.sqrt(k), z = d / (2 * w0);
+  if (z < 1) {
+    const wd = w0 * Math.sqrt(1 - z * z);
+    return 1 - Math.exp(-z * w0 * t) * (Math.cos(wd * t) + (z * w0 / wd) * Math.sin(wd * t));
+  }
+  return 1 - Math.exp(-w0 * t) * (1 + w0 * t);
+}
+// A value with several targets: keys = [[time, value], ...], one spring per change.
+function track(t, keys, k = 170, d = 26) {
+  let v = keys[0][1];
+  for (let i = 1; i < keys.length; i++) v += (keys[i][1] - keys[i - 1][1]) * spring(t - keys[i][0], k, d);
+  return v;
+}
+// Seeded noise (mulberry32). Never Math.random: every export must be identical.
+function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+  let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+  t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function rrect(x, y, w, h, r) { g.beginPath(); g.roundRect(x, y, w, h, Math.max(0, Math.min(r, w / 2, h / 2))); }
+const img = {};                          // loaded images, by name (see IMAGES below)
+</script>
+
+<script>
+// ===========================================================================
+// SCENE: Claude replaces everything from here down to END SCENE.
+// Rules: draw(t) paints the frame at t seconds and nothing else. No timers,
+// no CSS animation, no state kept between frames, no Math.random.
+// ===========================================================================
+const DUR = 10;                          // seconds
+const FPS = 30;
+const SIZE = '1080x1920';                // default size: 1080x1920, 1080x1350, 1080x1080, 1920x1080
+const SHEET_FRAMES = 12;                 // frames on the contact sheet
+
+const BG = '#111316', INK = '#F3F0E8', ACC = '#FF6A3D', MUTED = '#3A3F47';
+const FONT = '"Helvetica Neue", Helvetica, Arial, sans-serif';
+
+// Images MUST be data: URLs (base64), not file paths. A file path blocks the
+// export when this page is opened from disk. To embed one, ask Claude to run:
+//   base64 -i assets/logo.png        (Windows: certutil -encode assets\logo.png out.txt)
+// and paste it as 'data:image/png;base64,....'. SVG works too: 'data:image/svg+xml,' + encodeURIComponent(svgText)
+const IMAGES = {
+  // logo: 'data:image/png;base64,....',
+};
+
+function draw(t) {
+  const land = W > H, sq = !land && H < W * 1.5, P = 96 * u;   // sq: 1:1 and 4:5
+  g.fillStyle = BG; g.fillRect(0, 0, W, H);
+
+  const exit = spring(t - 8.3, 150, 24);                // 0 → 1: content leaves for the end card
+  const out = -W * 1.15 * exit;
+
+  // 1. Logo (placeholder until IMAGES.logo is set). Grows into the end card.
+  const ls = spring(t - 0.05, 260, 15);
+  const size = track(t, [[0, 150 * u], [8.3, 300 * u]], 150, 24);
+  const ly = track(t, [[0, P], [8.3, H * (land ? 0.30 : 0.36)]], 150, 24);
+  g.save(); g.translate(P + size / 2, ly + size / 2); g.rotate((1 - ls) * -0.6); g.scale(ls, ls);
+  if (img.logo) g.drawImage(img.logo, -size / 2, -size / 2, size, size);
+  else {
+    g.fillStyle = ACC; rrect(-size / 2, -size / 2, size, size, size * 0.22); g.fill();
+    g.fillStyle = BG; g.font = `800 ${size * 0.24}px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText('LOGO', 0, 0);
+  }
+  g.restore();
+  g.textAlign = 'left'; g.textBaseline = 'alphabetic';
+
+  // 2. Title: words rise out of a mask, then shrink up to make room for the stat.
+  const words = ['YOUR', 'BUSINESS', 'NAME'];
+  const ts = track(t, [[0, 1], [3, land ? 0.62 : sq ? 0.36 : 0.5]], 140, 22);
+  const ty = track(t, [[0, H * (land ? 0.42 : 0.40)], [3, P + 150 * u + 90 * u]], 140, 22);
+  const fs = 170 * u, lh = fs * 0.95;
+  g.save(); g.translate(P + out, ty); g.scale(ts, ts);
+  g.font = `900 ${fs}px ${FONT}`;
+  words.forEach((w, i) => {
+    const s = spring(t - 0.25 - i * 0.14, 240, 21), y = i * lh;
+    g.save(); g.beginPath(); g.rect(-20, y - lh, W * 2, lh + 12 * u); g.clip();
+    g.fillStyle = i === 2 ? ACC : INK; g.fillText(w, 0, y + (1 - s) * lh * 1.1);
+    g.restore();
+  });
+  const ul = spring(t - 0.9, 120, 20);                   // underline sweeps in
+  g.fillStyle = ACC; g.fillRect(0, 2 * lh + 30 * u, g.measureText('NAME').width * ul, 16 * u);
+  g.restore();
+
+  // 3. Stat: counts up from 0 at t = 3.
+  if (t > 3) {
+    const sx = (land ? W * 0.5 : P) + out, sy = H * (land ? 0.52 : sq ? 0.62 : 0.56);
+    const target = 1240, c = spring(t - 3.15, 30, 12);  // overdamped: never overshoots the real number
+    const n = Math.round(target * c).toLocaleString('en-US');
+    const rise = spring(t - 3, 260, 22), nfs = (sq ? 220 : 300) * u;
+    g.save(); g.beginPath(); g.rect(sx - 20, sy - nfs, W, nfs + 30 * u); g.clip();
+    g.fillStyle = ACC; g.font = `900 ${nfs}px ${FONT}`; g.fillText(n, sx, sy + (1 - rise) * nfs);
+    g.restore();
+    const lr = spring(t - 3.35, 220, 22);
+    g.globalAlpha = lr; g.fillStyle = INK; g.font = `500 ${60 * u}px ${FONT}`;
+    g.fillText('orders this month', sx, sy + (sq ? 95 : 100) * u + (1 - lr) * 40 * u); g.globalAlpha = 1;
+    const bw = (land ? W * 0.5 - P : W - 2 * P), by = sy + (sq ? 145 : 160) * u;
+    g.fillStyle = MUTED; rrect(sx, by, bw * spring(t - 3.2, 200, 24), 28 * u, 14 * u); g.fill();
+    g.fillStyle = INK; rrect(sx, by, bw * 0.92 * c, 28 * u, 14 * u); g.fill();
+
+    // 4. Three words pop in as pills at t = 6.
+    const pills = ['Fresh', 'every', 'morning'];
+    let px = sx; const py = by + 110 * u, ph = 104 * u;
+    g.font = `700 ${56 * u}px ${FONT}`;
+    pills.forEach((p, i) => {
+      const s = spring(t - 6 - i * 0.25, 320, 17), pw = g.measureText(p).width + 64 * u;
+      g.save(); g.translate(px + pw / 2, py + ph / 2); g.scale(s, s);
+      g.fillStyle = i === 2 ? ACC : INK; rrect(-pw / 2, -ph / 2, pw, ph, ph / 2); g.fill();
+      g.fillStyle = BG; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(p, 0, 4 * u);
+      g.restore(); px += pw + 20 * u;
+    });
+    g.textAlign = 'left'; g.textBaseline = 'alphabetic';
+  }
+
+  // 5. End card: web address types in next to the logo.
+  if (t > 8.6) {
+    const url = 'yourbusiness.com', k = Math.floor(clamp((t - 8.7) / 0.6) * url.length);
+    const ux = P, uy = ly + size + 120 * u;
+    g.fillStyle = INK; g.font = `700 ${84 * u}px ${FONT}`; g.fillText(url.slice(0, k), ux, uy);
+    if (k < url.length || Math.floor(t * 2.5) % 2 === 0) {      // caret
+      g.fillStyle = ACC; g.fillRect(ux + g.measureText(url.slice(0, k)).width + 8 * u, uy - 70 * u, 10 * u, 84 * u);
+    }
+  }
+}
+
+// Sound (optional). Schedule hits on the same times as the picture.
+// s.kick(t), s.click(t), s.pop(t, hz), s.whoosh(t, len), s.thump(t), s.note(t, midi, len). Delete the body for silence.
+function sound(s) {
+  for (let b = 0; b < DUR * 2; b++) s.kick(b * 0.5, 0.35);                 // soft pulse, 120 BPM
+  s.whoosh(0, 0.35);
+  [0, 1, 2].forEach((i) => s.click(0.3 + i * 0.14));                       // title words land
+  s.thump(3);
+  for (let i = 0; i < 14; i++) s.click(3.2 + i * 0.07 + i * i * 0.004, 0.18); // counter ticks
+  [6, 6.25, 6.5].forEach((t, i) => s.pop(t, 500 + i * 150));               // pills
+  s.whoosh(8.2, 0.4); s.thump(8.6);
+  [69, 73, 76].forEach((m) => s.note(8.7, m, 1.2, 0.08));                  // end chord
+}
+// ======================= END SCENE =======================================
+</script>
+
+<script>
+// ---------------------------------------------------------------------------
+// Player and exporters. Leave this part alone.
+// ---------------------------------------------------------------------------
+const $ = (id) => document.getElementById(id);
+const say = (text, err = false) => { $('msg').textContent = text; $('msg').className = err ? 'err' : ''; };
+let now = 0;
+
+function setSize(s) {
+  [W, H] = s.split('x').map(Number); u = Math.min(W, H) / 1080;
+  canvas.width = W; canvas.height = H; $('size').value = s; seek(now);
+}
+window.seek = (t) => { now = t; draw(t); return true; };
+
+// Images: load every IMAGES entry before the first frame.
+const ready = Promise.all(Object.entries(IMAGES).map(([k, src]) => new Promise((res) => {
+  const im = new Image(); im.onload = () => { img[k] = im; res(); };
+  im.onerror = () => { say(`Image "${k}" did not load.`, true); res(); }; im.src = src;
+}))).then(() => document.fonts.ready);
+
+function tainted() { try { g.getImageData(0, 0, 1, 1); return false; } catch { return true; } }
+const TAINT_MSG = 'An image was loaded from a file path, so Chrome blocks saving. Ask Claude to embed every image in IMAGES as a data: URL.';
+
+// ---- Sound -----------------------------------------------------------------
+const SR = 48000;
+function synth(ctx) {
+  const out = ctx.createGain(); out.gain.value = 0.9; out.connect(ctx.destination);
+  const nb = ctx.createBuffer(1, SR, SR), nd = nb.getChannelData(0), r = rng(7);
+  for (let i = 0; i < nd.length; i++) nd[i] = r() * 2 - 1;
+  const env = (t, peak, dec) => { const e = ctx.createGain(); e.gain.setValueAtTime(0, 0);
+    e.gain.setValueAtTime(0.0001, Math.max(0, t)); e.gain.exponentialRampToValueAtTime(peak, t + 0.004);
+    e.gain.exponentialRampToValueAtTime(0.0001, t + dec); e.connect(out); return e; };
+  const osc = (type, t, f0, f1, glide, dest, len) => { const o = ctx.createOscillator(); o.type = type;
+    o.frequency.setValueAtTime(f0, t); if (f1 !== f0) o.frequency.exponentialRampToValueAtTime(f1, t + glide);
+    o.connect(dest); o.start(t); o.stop(t + len); };
+  const hz = (m) => 440 * Math.pow(2, (m - 69) / 12);
+  return {
+    kick:  (t, v = 0.8) => osc('sine', t, 150, 45, 0.12, env(t, v, 0.35), 0.4),
+    thump: (t, v = 0.9) => osc('sine', t, 110, 32, 0.4, env(t, v, 0.6), 0.65),
+    click: (t, v = 0.3) => osc('sine', t, 1800, 1800, 0, env(t, v, 0.04), 0.05),
+    pop:   (t, f = 600, v = 0.3) => osc('sine', t, f, f * 2.2, 0.1, env(t, v, 0.15), 0.18),
+    note:  (t, m, len = 0.5, v = 0.15) => osc('triangle', t, hz(m), hz(m), 0, env(t, v, len), len + 0.05),
+    whoosh: (t, len = 0.5, v = 0.35) => {
+      const n = ctx.createBufferSource(); n.buffer = nb; n.loop = true;
+      const f = ctx.createBiquadFilter(); f.type = 'bandpass'; f.Q.value = 1.2;
+      f.frequency.setValueAtTime(300, t); f.frequency.exponentialRampToValueAtTime(5000, t + len);
+      const e = ctx.createGain(); e.gain.setValueAtTime(0, 0); e.gain.setValueAtTime(0, t);
+      e.gain.linearRampToValueAtTime(v, t + len * 0.75); e.gain.linearRampToValueAtTime(0, t + len);
+      n.connect(f); f.connect(e); e.connect(out); n.start(t); n.stop(t + len + 0.01);
+    },
+  };
+}
+let scoreBuf = null;
+async function score() {                 // renders sound() once into a buffer, or null if silent
+  if (scoreBuf !== null) return scoreBuf || null;
+  const ctx = new OfflineAudioContext(2, Math.ceil(DUR * SR), SR);
+  let n = 0; const s = synth(ctx), counted = {};
+  for (const k in s) counted[k] = (...a) => { n++; s[k](...a); };
+  sound(counted);
+  scoreBuf = n ? await ctx.startRendering() : false;
+  return scoreBuf || null;
+}
+
+// ---- Play ------------------------------------------------------------------
+let playing = false, played = false, actx = null, src = null;
+async function play() {
+  if (playing) return stop();
+  playing = true; $('play').textContent = 'Pause';
+  const start = !played || now >= DUR - 1 / FPS ? 0 : now; played = true;
+  if ($('sound').checked) {
+    const buf = await score();
+    if (buf && playing) {
+      actx = actx || new AudioContext(); await actx.resume();
+      src = actx.createBufferSource(); src.buffer = buf; src.loop = true; src.loopEnd = DUR;
+      src.connect(actx.destination); src.start(0, start);
+    }
+  }
+  const t0 = performance.now() - start * 1000;
+  (function loop() {
+    if (!playing) return;
+    const t = ((performance.now() - t0) / 1000) % DUR;
+    seek(t); $('scrub').value = t / DUR; $('time').textContent = t.toFixed(2) + 's';
+    requestAnimationFrame(loop);
+  })();
+}
+function stop() { playing = false; $('play').textContent = 'Play'; if (src) { try { src.stop(); } catch {} src = null; } }
+$('play').onclick = play;
+$('scrub').oninput = (e) => { stop(); played = true; const t = e.target.value * DUR; seek(t); $('time').textContent = t.toFixed(2) + 's'; };
+$('size').onchange = (e) => setSize(e.target.value);
+
+// ---- Downloads -------------------------------------------------------------
+function download(blob, name) {
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+}
+
+// ---- Contact sheet ---------------------------------------------------------
+window.contactSheet = async ({ download: dl = true } = {}) => {
+  stop(); await ready;
+  const keep = now, n = SHEET_FRAMES, cols = W > H ? 3 : 4, rows = Math.ceil(n / cols);
+  const tw = W > H ? 480 : 270, th = Math.round(tw * H / W), pad = 12, lab = 34;
+  const sc = document.createElement('canvas');
+  sc.width = cols * tw + (cols + 1) * pad; sc.height = rows * (th + lab) + (rows + 1) * pad;
+  const sg = sc.getContext('2d');
+  sg.fillStyle = '#ffffff'; sg.fillRect(0, 0, sc.width, sc.height);
+  sg.font = '600 20px ui-monospace, Menlo, Consolas, monospace'; sg.fillStyle = '#111'; sg.textBaseline = 'middle';
+  for (let i = 0; i < n; i++) {
+    const t = (i + 0.5) * DUR / n, x = pad + (i % cols) * (tw + pad), y = pad + Math.floor(i / cols) * (th + lab + pad);
+    seek(t); sg.drawImage(canvas, x, y, tw, th);
+    sg.fillText(`#${i + 1}  t = ${t.toFixed(2)}s`, x + 4, y + th + lab / 2);
+  }
+  seek(keep);
+  if (tainted()) { say(TAINT_MSG, true); throw new Error(TAINT_MSG); }
+  const blob = await new Promise((r) => sc.toBlob(r, 'image/png'));
+  if (dl) { download(blob, 'contact-sheet.png'); say('Saved contact-sheet.png. Drag it into Claude Code for a critique.'); }
+  return blob;
+};
+$('sheet').onclick = () => contactSheet().catch((e) => say(e.message, true));
+
+// ---- Export MP4 (frame-exact: WebCodecs + mp4-muxer) ---------------------
+function loadScript(url) { return new Promise((res, rej) => { const s = document.createElement('script');
+  s.src = url; s.onload = res; s.onerror = rej; document.head.appendChild(s); }); }
+async function pickVideoConfig() {
+  for (const codec of ['avc1.640028', 'avc1.4d0028', 'avc1.640033', 'avc1.42e028']) {
+    const c = { codec, width: W, height: H, bitrate: Math.round(12e6 * (W * H) / (1080 * 1920)), framerate: FPS };
+    try { if ((await VideoEncoder.isConfigSupported(c)).supported) return c; } catch {}
+  }
+  return null;
+}
+async function pickAudioConfig() {
+  if (!('AudioEncoder' in window)) return null;
+  for (const [codec, mux] of [['mp4a.40.2', 'aac'], ['opus', 'opus']]) {
+    const c = { codec, sampleRate: SR, numberOfChannels: 2, bitrate: 192000 };
+    try { if ((await AudioEncoder.isConfigSupported(c)).supported) return { c, mux }; } catch {}
+  }
+  return null;
+}
+const progress = (p) => { $('export').textContent = `Exporting ${Math.round(p * 100)}%`; };
+
+window.exportMP4 = async ({ download: dl = true } = {}) => {
+  stop(); await ready;
+  if (!('VideoEncoder' in window)) return exportRecorded(dl,
+    'This browser cannot export frame-exact MP4 (no WebCodecs). Use Chrome or Edge for the best result.');
+  const vc = await pickVideoConfig();
+  if (!vc) return exportRecorded(dl, 'This browser has no H.264 encoder for this size. Use Chrome or Edge for the best result.');
+  if (!window.Mp4Muxer) { try { await loadScript('https://unpkg.com/mp4-muxer@5.2.2/build/mp4-muxer.js'); } catch {} }
+  if (!window.Mp4Muxer) throw new Error('Could not load the MP4 library from the internet. Check your connection, then refresh this page.');
+  seek(0); if (tainted()) throw new Error(TAINT_MSG);
+
+  const buf = $('sound').checked ? await score() : null;
+  const ac = buf ? await pickAudioConfig() : null;
+  const muxer = new Mp4Muxer.Muxer({
+    target: new Mp4Muxer.ArrayBufferTarget(),
+    video: { codec: 'avc', width: W, height: H, frameRate: FPS },
+    ...(ac ? { audio: { codec: ac.mux, numberOfChannels: 2, sampleRate: SR } } : {}),
+    fastStart: 'in-memory', firstTimestampBehavior: 'offset',
+  });
+  let fail = null;
+  const ve = new VideoEncoder({ output: (ch, meta) => muxer.addVideoChunk(ch, meta), error: (e) => { fail = e; } });
+  ve.configure(vc);
+  const frames = Math.round(DUR * FPS), keep = now;
+  for (let i = 0; i < frames; i++) {
+    if (fail) throw fail;
+    seek(i / FPS);
+    const f = new VideoFrame(canvas, { timestamp: Math.round(i * 1e6 / FPS), duration: Math.round(1e6 / FPS) });
+    ve.encode(f, { keyFrame: i % (FPS * 2) === 0 }); f.close();
+    while (ve.encodeQueueSize > 6) await new Promise((r) => setTimeout(r, 1));
+    if (i % 5 === 0) { progress(i / frames * (ac ? 0.95 : 1)); await new Promise((r) => setTimeout(r, 0)); }
+  }
+  await ve.flush(); ve.close(); if (fail) throw fail;
+
+  if (ac) {
+    const ae = new AudioEncoder({ output: (ch, meta) => muxer.addAudioChunk(ch, meta), error: (e) => { fail = e; } });
+    ae.configure(ac.c);
+    const L = buf.getChannelData(0), R = buf.getChannelData(1), step = 4800;
+    for (let i = 0; i < buf.length; i += step) {
+      const n = Math.min(step, buf.length - i), d = new Float32Array(n * 2);
+      d.set(L.subarray(i, i + n), 0); d.set(R.subarray(i, i + n), n);
+      const a = new AudioData({ format: 'f32-planar', sampleRate: SR, numberOfFrames: n, numberOfChannels: 2,
+        timestamp: Math.round(i / SR * 1e6), data: d });
+      ae.encode(a); a.close();
+    }
+    await ae.flush(); ae.close(); if (fail) throw fail;
+  }
+  muxer.finalize(); seek(keep);
+  const blob = new Blob([muxer.target.buffer], { type: 'video/mp4' });
+  const note = buf && !ac ? ' (no sound: this browser cannot encode audio)' : '';
+  if (dl) download(blob, 'motion.mp4');
+  say(`Saved motion.mp4: ${frames} frames, ${DUR}s, ${W}×${H}${note}.`);
+  return blob;
+};
+
+// Fallback for browsers without WebCodecs: records one real-time playthrough.
+async function exportRecorded(dl, why) {
+  if (!window.MediaRecorder || !canvas.captureStream) throw new Error(why + ' This browser cannot record video either.');
+  seek(0); if (tainted()) throw new Error(TAINT_MSG);
+  const type = ['video/mp4;codecs=avc1', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm'].find((t) => MediaRecorder.isTypeSupported(t));
+  const ext = type && type.startsWith('video/mp4') ? 'mp4' : 'webm';
+  say(why + ` Recording in real time instead (${ext.toUpperCase()}, may drop frames).`, true);
+  const stream = canvas.captureStream(FPS);
+  const buf = $('sound').checked ? await score() : null;
+  let ax = null;
+  if (buf) { ax = new AudioContext(); const d = ax.createMediaStreamDestination(), s = ax.createBufferSource();
+    s.buffer = buf; s.connect(d); d.stream.getAudioTracks().forEach((t) => stream.addTrack(t)); ax._s = s; }
+  const rec = new MediaRecorder(stream, type ? { mimeType: type, videoBitsPerSecond: 12e6 } : {}), parts = [];
+  rec.ondataavailable = (e) => e.data.size && parts.push(e.data);
+  const done = new Promise((r) => (rec.onstop = r));
+  rec.start(); if (ax) ax._s.start();
+  const t0 = performance.now();
+  await new Promise((res) => (function loop() {
+    const t = (performance.now() - t0) / 1000; seek(Math.min(t, DUR)); progress(Math.min(1, t / DUR));
+    t < DUR ? requestAnimationFrame(loop) : res();
+  })());
+  rec.stop(); await done; if (ax) ax.close();
+  const blob = new Blob(parts, { type: type || 'video/webm' });
+  if (dl) download(blob, 'motion.' + ext);
+  say(why + ` Saved motion.${ext} (real-time recording).`, true);
+  return blob;
+}
+
+$('export').onclick = async () => {
+  const b = $('export'); b.disabled = $('sheet').disabled = true;
+  try { await exportMP4(); } catch (e) { say('Export failed: ' + (e.message || e), true); console.error(e); }
+  b.disabled = $('sheet').disabled = false; b.textContent = 'Export MP4';
+};
+
+setSize(SIZE);
+ready.then(() => { seek(2); $('scrub').value = 2 / DUR; $('time').textContent = '2.00s'; });   // a frame with something on it
+if (!('VideoEncoder' in window)) say('Note: this browser cannot export frame-exact MP4. Chrome or Edge works best.', true);
+</script>
+</body>
+</html>

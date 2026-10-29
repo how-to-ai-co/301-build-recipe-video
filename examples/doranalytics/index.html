@@ -1,0 +1,75 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Doranalytics Brand Guidelines — Fonts & Charts</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Orbitron:wght@500;700&family=Space+Grotesk:wght@500;700&family=Sora:wght@500;700&family=IBM+Plex+Sans:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&family=Newsreader:wght@500;700&display=swap"><style>body{margin:0;padding:24px;background:#FBFAF7}main{max-width:1100px;margin:auto}*{box-sizing:border-box}@media(max-width:500px){body{padding:12px}}</style></head><body><main><div id="florentine-charts"><div id="bc-mount">Loading charts…</div></div>
+<style>.bc-root{font-family:var(--bc-body,Geist),ui-sans-serif,system-ui,sans-serif;font-size:14px;line-height:1.5}.bc-toolbar{margin-bottom:16px}.bc-toolbar select{font:inherit;padding:8px 12px;border-radius:6px;max-width:100%}.bc-swatches{display:flex;flex-wrap:wrap;gap:12px;padding:14px 18px;border-radius:10px;margin-bottom:16px}.bc-swatches span,.bc-legend span{display:inline-flex;align-items:center;gap:7px}.bc-swatches i{width:20px;height:20px;border-radius:4px}.bc-swatches code{font-size:12px}.bc-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.bc-card{border:1px solid;border-radius:12px;overflow:hidden;box-shadow:none}.bc-wide{grid-column:1/-1}.bc-card [data-slot=card-header]{padding:20px 22px 0}.bc-card [data-slot=card-content]{padding:12px 18px 20px}.bc-title{font-size:16px;font-weight:500;line-height:1.4;margin:0}.bc-unit{font-size:12px;margin-top:4px}.bc-legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;margin-top:12px}.bc-legend i{width:10px;height:10px;border-radius:2px}.bc-chart{min-width:0}.bc-chart svg{overflow:visible}@media(max-width:600px){.bc-grid{grid-template-columns:minmax(0,1fr)}.bc-card [data-slot=card-header]{padding:16px 14px 0}.bc-card [data-slot=card-content]{padding:8px 8px 16px}}
+
+.bc-title{font-family:var(--bc-display,Orbitron),sans-serif;font-weight:500}.bc-swatches code,.recharts-cartesian-axis-tick-value{font-family:var(--bc-mono,"Geist Mono"),monospace}.bc-specimen{background:#082E28;color:#F3EDE1;padding:24px;border-radius:12px;margin-bottom:20px}.bc-specimen h1{font-family:var(--bc-display,Orbitron),sans-serif;font-size:32px;font-weight:700;margin:4px 0 16px;overflow-wrap:anywhere}.bc-specimen p{font-family:var(--bc-body,Geist),sans-serif;font-size:16px;margin:10px 0}.bc-specimen .bc-numbers{font-family:var(--bc-mono,"Geist Mono"),monospace;color:#35E8B5;font-size:20px;font-variant-numeric:tabular-nums}.bc-specimen small{font-family:var(--bc-body,Geist),sans-serif;font-size:12px;color:#B6C8BD}
+
+.bc-toolbar{display:flex;flex-wrap:wrap;gap:12px}.bc-toolbar label{display:flex;align-items:center;flex-wrap:wrap;gap:8px}.bc-specimen small{color:inherit;opacity:.8}.bc-specimen h1{line-height:1.2}.bc-specimen .bc-numbers{font-weight:500}
+</style>
+<script type="importmap">{"imports":{"react":"https://esm.sh/react@19.1.0","react-dom":"https://esm.sh/react-dom@19.1.0?external=react"}}</script>
+<script type="module">
+import React, {useState} from "https://esm.sh/react@19.1.0";
+import {createRoot} from "https://esm.sh/react-dom@19.1.0/client?external=react";
+import {ResponsiveContainer, LineChart, Line, BarChart, Bar, AreaChart, Area, PieChart, Pie, Cell, CartesianGrid, XAxis, YAxis, Tooltip} from "https://esm.sh/recharts@3.2.1?deps=react@19.1.0,react-dom@19.1.0";
+const make=(tag,slot)=>(props)=>React.createElement(tag,{...props,"data-slot":slot},props.children);
+const Card=make("section","card"),CardHeader=make("div","card-header"),CardTitle=make("h3","card-title"),CardContent=make("div","card-content");
+const ChartContainer=({children,config,...props})=>React.createElement("div",props,React.createElement(ResponsiveContainer,{width:"100%",height:"100%"},children));
+const ChartTooltip=Tooltip;
+function ChartTooltipContent({active,payload,label}) {if(!active||!payload?.length)return null;return React.createElement("div",{style:{background:"var(--bc-bg)",color:"var(--bc-fg)",padding:12,borderRadius:6,border:"1px solid var(--bc-grid)"}},React.createElement("div",null,label),payload.map(p=>React.createElement("div",{key:p.dataKey},`${p.name}: ${p.value}`)));}
+
+const palettes = [
+ {name:"Florentine · original",bg:"#F3EDE1",fg:"#20231F",muted:"#685F52",grid:"#D8D0C1",colors:["#103F35","#B99A58","#6B303D","#88715B"]},
+ {name:"Florentine · sharper light",bg:"#F3EDE1",fg:"#20231F",muted:"#685F52",grid:"#D8D0C1",colors:["#08745C","#A52F50","#4655BB","#B97808"]},
+ {name:"Phthalo · luminous",bg:"#082E28",fg:"#F3EDE1",muted:"#B6C8BD",grid:"#31534A",colors:["#35E8B5","#FFC247","#F47798","#9BAAFF"]},
+ {name:"Ink · Florentine",bg:"#20231F",fg:"#F3EDE1",muted:"#C2BBAE",grid:"#45483F",colors:["#35E8B5","#FFC247","#F47798","#9BAAFF"]}
+];
+const data = [
+ {day:"Sep 7",organic:64,paid:32,revenue:120}, {day:"Sep 10",organic:92,paid:68,revenue:165},
+ {day:"Sep 13",organic:78,paid:46,revenue:148}, {day:"Sep 16",organic:112,paid:72,revenue:210},
+ {day:"Sep 19",organic:86,paid:52,revenue:190}, {day:"Sep 22",organic:138,paid:94,revenue:280},
+ {day:"Sep 25",organic:105,paid:70,revenue:235}, {day:"Sep 28",organic:152,paid:116,revenue:320},
+ {day:"Oct 1",organic:130,paid:88,revenue:305}, {day:"Oct 4",organic:176,paid:132,revenue:390}
+];
+const channels = [{name:"Search",value:48},{name:"Direct",value:27},{name:"Social",value:17},{name:"Referral",value:8}];
+
+const fontPairings = [
+ {name:"Orbitron · Cortex futuristic",display:"Orbitron",body:"Geist",mono:"Geist Mono"},
+ {name:"Space Grotesk · technical editorial",display:"Space Grotesk",body:"Geist",mono:"Geist Mono"},
+ {name:"Sora · geometric modern",display:"Sora",body:"Geist",mono:"Geist Mono"},
+ {name:"IBM Plex · research journal",display:"IBM Plex Sans",body:"IBM Plex Sans",mono:"IBM Plex Mono"},
+ {name:"Newsreader · Renaissance editorial",display:"Newsreader",body:"Geist",mono:"Geist Mono"}
+];
+
+function BrandCharts() {
+ const [index,setIndex]=useState(0);
+ const [fontIndex,setFontIndex]=useState(0);
+ const f=fontPairings[fontIndex];
+ const p=palettes[index];
+ const config={organic:{label:"Organic",color:p.colors[0]},paid:{label:"Paid",color:p.colors[1]},revenue:{label:"Revenue",color:p.colors[0]}};
+ const axis={tick:{fill:p.muted,fontSize:12},tickLine:false,axisLine:false,minTickGap:32};
+ const grid=React.createElement(CartesianGrid,{stroke:p.grid,vertical:false});
+ const x=React.createElement(XAxis,{...axis,dataKey:"day",interval:"preserveStartEnd"});
+ const y=React.createElement(YAxis,{...axis,width:44});
+ const tip=React.createElement(ChartTooltip,{content:React.createElement(ChartTooltipContent),contentStyle:{background:p.bg,color:p.fg,borderColor:p.grid}});
+ const legend=(items)=>React.createElement("div",{className:"bc-legend"},items.map(([label,color])=>React.createElement("span",{key:label},React.createElement("i",{style:{background:color}}),label)));
+ const panel=(title,unit,chart,labels,wide=false)=>React.createElement(Card,{className:`bc-card ${wide?"bc-wide":""}`,style:{background:p.bg,color:p.fg,borderColor:p.grid},key:title},
+ React.createElement(CardHeader,null,React.createElement(CardTitle,{className:"bc-title"},title),React.createElement("div",{className:"bc-unit",style:{color:p.muted}},unit)),
+ React.createElement(CardContent,null,React.createElement(ChartContainer,{config,className:"bc-chart",style:{height:240,width:"100%"}},chart),legend(labels)));
+ return React.createElement("div",{className:"bc-root",style:{"--bc-display":`"${f.display}",sans-serif`,"--bc-body":`"${f.body}",sans-serif`,"--bc-mono":`"${f.mono}",monospace`,"--bc-bg":p.bg,"--bc-fg":p.fg,"--bc-grid":p.grid,"--background":p.bg,"--foreground":p.fg,"--muted-foreground":p.muted,"--border":p.grid,"--popover":p.bg,"--popover-foreground":p.fg}},
+ React.createElement("div",{className:"bc-toolbar"},React.createElement("label",null,"Palette ",React.createElement("select",{value:index,onChange:e=>setIndex(Number(e.target.value)),"aria-label":"Chart palette"},palettes.map((v,i)=>React.createElement("option",{value:i,key:v.name},v.name)))),
+ React.createElement("label",null,"Font pairing ",React.createElement("select",{value:fontIndex,onChange:e=>setFontIndex(Number(e.target.value)),"aria-label":"Font pairing"},fontPairings.map((v,i)=>React.createElement("option",{value:i,key:v.name},v.name))))),
+ React.createElement("section",{className:"bc-specimen",style:{background:p.bg,color:p.fg,border:`1px solid ${p.grid}`}},
+ React.createElement("small",null,`${f.display} · Display / 700`),React.createElement("h1",null,"Florentine Futures"),
+ React.createElement("small",null,`${f.body} · Body / 400`),React.createElement("p",null,"Clear thinking. Precise systems. A warmer kind of technology."),
+ React.createElement("small",null,`${f.mono} · Data / 500`),React.createElement("p",{className:"bc-numbers",style:{color:p.fg}},"$24,680.00  +18.4%")),
+ React.createElement("div",{className:"bc-swatches",style:{background:p.bg,color:p.fg}},[p.bg,p.fg,...p.colors].map((color,i)=>React.createElement("span",{key:i},React.createElement("i",{style:{background:color,border:`1px solid ${p.muted}`}}),React.createElement("code",null,color)))),
+ React.createElement("div",{className:"bc-grid"},
+ panel("Acquisition over time","Installs · synthetic sample data",React.createElement(LineChart,{data,margin:{top:12,right:16,bottom:0,left:0}},grid,x,y,tip,React.createElement(Line,{dataKey:"organic",stroke:p.colors[0],strokeWidth:3,dot:false,isAnimationActive:false}),React.createElement(Line,{dataKey:"paid",stroke:p.colors[1],strokeWidth:3,strokeDasharray:"7 4",dot:false,isAnimationActive:false})),[["Organic — solid",p.colors[0]],["Paid — dashed",p.colors[1]]],true),
+ panel("Install mix","Installs · by date",React.createElement(BarChart,{data,margin:{top:12,right:12,bottom:0,left:0}},grid,x,y,tip,React.createElement(Bar,{dataKey:"organic",stackId:"a",fill:p.colors[0],isAnimationActive:false}),React.createElement(Bar,{dataKey:"paid",stackId:"a",fill:p.colors[1],radius:[3,3,0,0],isAnimationActive:false})),[["Organic",p.colors[0]],["Paid",p.colors[1]]]),
+ panel("Revenue trend","Revenue · USD",React.createElement(AreaChart,{data,margin:{top:12,right:12,bottom:0,left:0}},grid,x,y,tip,React.createElement(Area,{dataKey:"revenue",stroke:p.colors[0],fill:p.colors[0],fillOpacity:0.16,strokeWidth:3,isAnimationActive:false})),[["Revenue",p.colors[0]]]),
+ panel("Traffic share","Share of sessions · %",React.createElement(PieChart,null,React.createElement(Tooltip,{contentStyle:{background:p.bg,color:p.fg,borderColor:p.grid}}),React.createElement(Pie,{data:channels,dataKey:"value",nameKey:"name",innerRadius:60,outerRadius:92,paddingAngle:3,stroke:"none",isAnimationActive:false},channels.map((v,i)=>React.createElement(Cell,{key:v.name,fill:p.colors[i]})))),channels.map((v,i)=>[`${v.name} ${v.value}%`,p.colors[i]])),
+ panel("Channel conversion","Conversion rate · %",React.createElement(BarChart,{data:channels.map(v=>({...v,rate:v.value/10})),layout:"vertical",margin:{top:12,right:20,bottom:0,left:12}},React.createElement(CartesianGrid,{stroke:p.grid,horizontal:false}),React.createElement(XAxis,{...axis,type:"number",domain:[0,6],unit:"%"}),React.createElement(YAxis,{...axis,type:"category",dataKey:"name",width:64,interval:0}),React.createElement(Tooltip,{contentStyle:{background:p.bg,color:p.fg,borderColor:p.grid},formatter:v=>[`${v}%`,"Conversion"]}),React.createElement(Bar,{dataKey:"rate",fill:p.colors[2],radius:[0,3,3,0],isAnimationActive:false})),[["Conversion",p.colors[2]]])
+ ));
+}
+createRoot(document.getElementById("bc-mount")).render(React.createElement(BrandCharts));
+</script>
+</main></body></html>

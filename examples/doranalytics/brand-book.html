@@ -1,0 +1,271 @@
+<title>Doranalytics Brand Book</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Orbitron:wght@500;700&family=Space+Grotesk:wght@500;700&family=Sora:wght@500;700&family=IBM+Plex+Sans:wght@500;700&family=Newsreader:wght@500;700&display=swap">
+<style>
+/* Layout: one reading column, two tabs (strategy, guidelines), Florentine palette from tokens.css */
+:root{
+  --bg:#F3EDE1; --fg:#20231F; --muted:#685F52; --line:#D8D0C1; --panel:#EBE3D4;
+  --accent:#103F35; --gold:#B99A58; --wine:#6B303D;
+  --display:'Orbitron',ui-sans-serif,system-ui,sans-serif;
+  --body:'Geist',ui-sans-serif,system-ui,-apple-system,sans-serif;
+  --mono:'Geist Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#082E28; --fg:#F3EDE1; --muted:#B6C8BD; --line:#31534A; --panel:#0D3830;
+  --accent:#35E8B5; --gold:#FFC247; --wine:#F47798; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#082E28; --fg:#F3EDE1; --muted:#B6C8BD; --line:#31534A; --panel:#0D3830;
+  --accent:#35E8B5; --gold:#FFC247; --wine:#F47798; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:15.5px/1.6 var(--body)}
+.wrap{max-width:820px;margin:0 auto;padding-block:40px 80px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{display:flex;flex-direction:column;gap:6px;margin-bottom:28px}
+.handle{font:500 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font:700 clamp(26px,6vw,40px)/1.15 var(--display);margin:0;letter-spacing:.02em;text-wrap:balance}
+h2{font:700 20px/1.3 var(--display);margin:0;letter-spacing:.03em;text-wrap:balance}
+h3{font:600 16px/1.35 var(--body);margin:0}
+p{margin:0;max-width:65ch}
+.meta{font:400 13px var(--mono);color:var(--muted)}
+nav{display:flex;gap:8px;border-bottom:1px solid var(--line);margin-bottom:32px;position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);z-index:5;padding-top:8px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+nav button{font:600 14px var(--body);background:none;border:0;color:var(--muted);padding:10px 4px;margin-right:16px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+nav button[aria-selected="true"]{color:var(--fg);border-bottom-color:var(--accent)}
+nav button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+section.tab{display:flex;flex-direction:column;gap:40px}
+.block{display:flex;flex-direction:column;gap:14px}
+.lede{font:500 clamp(20px,4vw,26px)/1.35 'Newsreader',Georgia,serif;max-width:40ch;text-wrap:balance}
+ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;max-width:65ch}
+li::marker{color:var(--gold)}
+.callout{border:1px solid var(--line);border-radius:12px;padding:16px 18px;background:var(--panel);display:flex;flex-direction:column;gap:8px}
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:520px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+th{font:500 11.5px var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--muted);background:var(--panel)}
+td.num,.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+pre{font:13px/1.6 var(--mono);background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin:0;overflow-x:auto}
+.pal{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.pal-card{border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+.pal-top{padding:14px;display:flex;flex-direction:column;gap:10px;min-height:118px}
+.pal-top b{font:600 13px var(--body)}
+.chips{display:flex;gap:6px}
+.chips i{width:26px;height:26px;border-radius:6px;display:block}
+.pal-card p{font-size:13px;color:var(--muted);padding:10px 14px}
+.fonts{display:grid;gap:10px}
+.font-row{border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 16px;align-items:baseline}
+.font-row .sample{font-size:24px;line-height:1.2;min-width:0}
+.font-row .role{font:400 12px var(--mono);color:var(--muted);grid-column:1/-1}
+.tag{font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+@media (max-width:520px){.font-row{grid-template-columns:1fr}}
+</style>
+
+<div class="wrap">
+<header>
+  <span class="handle">@doranalytics.xyz</span>
+  <h1>Doranalytics Brand Book</h1>
+  <span class="meta">Strategy v1 · Oct 19, 2026 &nbsp;·&nbsp; Guidelines v1 · Oct 6, 2026</span>
+</header>
+
+<nav role="tablist">
+  <button role="tab" id="tab-strategy" aria-selected="true" data-tab="strategy">Content strategy</button>
+  <button role="tab" id="tab-guidelines" aria-selected="false" data-tab="guidelines">Brand guidelines</button>
+</nav>
+
+<!-- STRATEGY -->
+<section class="tab" id="strategy" role="tabpanel">
+  <div class="callout">
+    <span class="tag">The rule</span>
+    <p>Every edit serves <b>one ICP</b>, solves <b>one of their problems</b>, and sits in <b>one pillar</b>. If a video can't name all three, it doesn't ship.</p>
+  </div>
+
+  <div class="block">
+    <h2>Purpose</h2>
+    <p class="lede">Anyone can build anything now. So build a company.</p>
+    <p>Small companies will take over big ones through distribution, taste, design, style, a better and more specific product, and speed. A solo founder helping other people become solo founders, or level up their careers with AI if a company isn't their move yet.</p>
+    <p>Not consulting. A product, any product. <i>Follow me if you want to build a company. Let me help you build your own.</i> The philosophy stays, but the content goes down the stack: the actual steps of building a company.</p>
+  </div>
+
+  <div class="block">
+    <h2>Worldview</h2>
+    <ul>
+      <li><b>Building beats credentials.</b> What you ship counts. What you hold doesn't.</li>
+      <li><b>Software got cheap; taste and distribution didn't.</b> Making the thing is no longer the hard part.</li>
+      <li><b>Small beats big.</b> One founder with AI outruns a department.</li>
+      <li><b>Institutions are slower and weaker than they look.</b> Corporate, hiring, education.</li>
+    </ul>
+  </div>
+
+  <div class="block">
+    <h2>Why listen</h2>
+    <ul>
+      <li>Several startups launched, from this account.</li>
+      <li>Corporate history: knows how the big side works from the inside.</li>
+      <li>A builder who ships, not a commentator.</li>
+      <li>Analytics background: can show the real numbers.</li>
+      <li>An audience already, which most builders don't have.</li>
+    </ul>
+  </div>
+
+  <div class="block">
+    <h2>Why people relate</h2>
+    <ul>
+      <li>Not naturally good at marketing.</li>
+      <li>Not naturally good at design.</li>
+      <li>Letting go of things too early instead of holding on.</li>
+      <li>Constant failures, said out loud.</li>
+      <li>The builder trap: feature creep and growing scope instead of going after first customers.</li>
+      <li>Right now: a holding pattern, looking for revenue and seed, in public.</li>
+    </ul>
+    <p class="meta">These aren't confessions. Each one is a mistake the audience is about to make.</p>
+  </div>
+
+  <div class="block">
+    <h2>Enemy and allies</h2>
+    <h3>The gatekeepers</h3>
+    <ul>
+      <li>Ladders and credential mills: certificates, courses that teach watching instead of building.</li>
+      <li>Corporate gatekeepers: hiring filters, permission culture, slowness.</li>
+      <li>Big AI labs pushing regulatory capture. Use their tools as hard as possible; don't trust their gatekeeping.</li>
+    </ul>
+    <h3>The builders, and the people locked out</h3>
+    <p>Solo founders, vibepreneurs, operators, analysts, marketing managers, single moms, and kids graduating into a job market they think AI killed. Everyone who wants to level up and is being blocked out.</p>
+  </div>
+
+  <div class="block">
+    <h2>Audiences</h2>
+    <div class="scroll"><table>
+      <tr><th>ICP</th><th>Their problem</th><th>What we show them</th></tr>
+      <tr><td><b>Aspiring solo founder</b></td><td>Has ideas, doesn't know the steps from idea to revenue</td><td>How to build a company, step by step</td></tr>
+      <tr><td><b>Career leveler</b><br><span class="meta">analyst, marketer, operator</span></td><td>Stuck on a ladder, afraid of being replaced</td><td>AI skills that make them the person who builds</td></tr>
+      <tr><td><b>New grad</b></td><td>Hates AI because they think the jobs are gone</td><td>You can create your own job</td></tr>
+      <tr><td><b>Locked out</b><br><span class="meta">single parents, career changers</span></td><td>No degree, no time, no connections</td><td>No permission needed; here's the path</td></tr>
+    </table></div>
+  </div>
+
+  <div class="block">
+    <h2>Pillars</h2>
+    <div class="scroll"><table>
+      <tr><th>Pillar</th><th>What it covers</th><th>Formats</th><th>Share</th></tr>
+      <tr><td><b>Build a Company</b></td><td>Idea, product, design, distribution, first customers, pricing</td><td>"Building a company, part N", screen recordings, checklist carousels, "the one thing nobody tells you"</td><td class="num">30%</td></tr>
+      <tr><td><b>How to AI</b></td><td>Tools and workflows; leveling up your career</td><td>Tool walkthroughs, "I built X in Y hours", before and after, "if you're an analyst, do this"</td><td class="num">20%</td></tr>
+      <tr><td><b>Founder in Public</b></td><td>The raise, revenue, failures, the holding pattern</td><td>Founder diary yap, real numbers on screen, startup postmortems</td><td class="num">15%</td></tr>
+      <tr><td><b>The Life</b></td><td>Venice, coding on the beach, meetups, running, lifting</td><td>B-roll montage with VO, beach yap, run or lift with a thesis</td><td class="num">15%</td></tr>
+      <tr><td><b>The New Rules</b></td><td>Small beats big, taste and distribution, where work is going</td><td>Talking-head takes, one-word typography, framework carousels</td><td class="num">10%</td></tr>
+      <tr><td><b>No Gatekeepers</b></td><td>Credential mills, corporate permission, lab regulatory capture</td><td>Stunts and experiments, stitches, "they told you X, here's Y"</td><td class="num">10%</td></tr>
+    </table></div>
+    <p class="meta">Builder spotlights run across every pillar: duets, interviews, build challenges.</p>
+  </div>
+
+  <div class="block">
+    <h2>The edit check</h2>
+    <p>Written in the delivery notes before an edit ships:</p>
+<pre>ICP:     (one of the four)
+Problem: (theirs, in their words)
+Pillar:  (one of the six)</pre>
+  </div>
+
+  <div class="block">
+    <h2>Still open</h2>
+    <h3>Aesthetic</h3>
+    <ul>
+      <li>Today: talking-head yaps with Orbitron captions. Next: a world, not just a font.</li>
+      <li>Decide whether video uses the Florentine palettes and pairings or gets its own system.</li>
+      <li>B-roll to capture: beach coding in Venice, the boardwalk, meetups, running, lifting, desk setup, screens mid-build, golden hour.</li>
+      <li>To decide: caption treatment, color grade, a recurring opener, a cover template per pillar.</li>
+    </ul>
+    <h3>Offer</h3>
+    <p>Now: working with Ruben; the bio links to the How to AI community. Later, undecided: software or SaaS, targeted AI consulting, large implementations, or consulting with Ruben.</p>
+  </div>
+</section>
+
+<!-- GUIDELINES -->
+<section class="tab" id="guidelines" role="tabpanel" hidden>
+  <div class="block">
+    <h2>Direction</h2>
+    <p>A Florentine palette inspired by shutters, plaster, gilding and Renaissance architecture, expressed through precise technical graphics. All four palettes and all five font pairings are approved options. The defaults below are recommendations, not one permanent choice.</p>
+  </div>
+
+  <div class="block">
+    <h2>Palettes</h2>
+    <div class="pal">
+      <div class="pal-card"><div class="pal-top" style="background:#F3EDE1;color:#20231F"><b>Florentine original</b><div class="chips"><i style="background:#103F35"></i><i style="background:#B99A58"></i><i style="background:#6B303D"></i><i style="background:#88715B"></i></div><span class="mono" style="font-size:11px;color:#685F52">#F3EDE1 · #20231F</span></div><p>Editorial, website, warm charts</p></div>
+      <div class="pal-card"><div class="pal-top" style="background:#F3EDE1;color:#20231F"><b>Sharper light</b><div class="chips"><i style="background:#08745C"></i><i style="background:#A52F50"></i><i style="background:#4655BB"></i><i style="background:#B97808"></i></div><span class="mono" style="font-size:11px;color:#685F52">#F3EDE1 · #20231F</span></div><p>Daylight technical dashboards</p></div>
+      <div class="pal-card"><div class="pal-top" style="background:#082E28;color:#F3EDE1"><b>Phthalo luminous</b><div class="chips"><i style="background:#35E8B5"></i><i style="background:#FFC247"></i><i style="background:#F47798"></i><i style="background:#9BAAFF"></i></div><span class="mono" style="font-size:11px;color:#B6C8BD">#082E28 · #F3EDE1</span></div><p>Signature dark technical graphics</p></div>
+      <div class="pal-card"><div class="pal-top" style="background:#20231F;color:#F3EDE1"><b>Ink Florentine</b><div class="chips"><i style="background:#35E8B5"></i><i style="background:#FFC247"></i><i style="background:#F47798"></i><i style="background:#9BAAFF"></i></div><span class="mono" style="font-size:11px;color:#C2BBAE">#20231F · #F3EDE1</span></div><p>Neutral dark alternative</p></div>
+    </div>
+    <div class="scroll"><table>
+      <tr><th>Token</th><th>Florentine</th><th>Sharper</th><th>Phthalo</th><th>Ink</th></tr>
+      <tr><td>Surface</td><td class="num">#F3EDE1</td><td class="num">#F3EDE1</td><td class="num">#082E28</td><td class="num">#20231F</td></tr>
+      <tr><td>Text</td><td class="num">#20231F</td><td class="num">#20231F</td><td class="num">#F3EDE1</td><td class="num">#F3EDE1</td></tr>
+      <tr><td>Secondary text</td><td class="num">#685F52</td><td class="num">#685F52</td><td class="num">#B6C8BD</td><td class="num">#C2BBAE</td></tr>
+      <tr><td>Grid / border</td><td class="num">#D8D0C1</td><td class="num">#D8D0C1</td><td class="num">#31534A</td><td class="num">#45483F</td></tr>
+      <tr><td>Series 1</td><td class="num">#103F35</td><td class="num">#08745C</td><td class="num">#35E8B5</td><td class="num">#35E8B5</td></tr>
+      <tr><td>Series 2</td><td class="num">#B99A58</td><td class="num">#A52F50</td><td class="num">#FFC247</td><td class="num">#FFC247</td></tr>
+      <tr><td>Series 3</td><td class="num">#6B303D</td><td class="num">#4655BB</td><td class="num">#F47798</td><td class="num">#F47798</td></tr>
+      <tr><td>Series 4</td><td class="num">#88715B</td><td class="num">#B97808</td><td class="num">#9BAAFF</td><td class="num">#9BAAFF</td></tr>
+    </table></div>
+    <p class="meta">Luminous accents are for dark surfaces; use the light sets on cream.</p>
+  </div>
+
+  <div class="block">
+    <h2>Typography</h2>
+    <p>The core pairing is Orbitron for display, Geist for body, Geist Mono for data.</p>
+    <div class="fonts">
+      <div class="font-row"><span class="sample" style="font-family:'Orbitron',sans-serif;font-weight:700">Build a company</span><span class="tag">Display</span><span class="role">Orbitron 500/700 · wordmarks, short titles, technical hooks. Sparingly; never paragraphs or chart ticks.</span></div>
+      <div class="font-row"><span class="sample" style="font-family:'Geist',sans-serif">Anyone can build anything now.</span><span class="tag">Body</span><span class="role">Geist 400/500/600 · paragraphs, labels, tooltips, legends. The everyday face.</span></div>
+      <div class="font-row"><span class="sample" style="font-family:'Geist Mono',monospace">$4,820 · 12.4% · 09:41</span><span class="tag">Data</span><span class="role">Geist Mono 400/500 · numbers, code, timestamps. Tabular figures.</span></div>
+    </div>
+    <div class="scroll"><table>
+      <tr><th>Pairing</th><th>Display</th><th>Body</th><th>Data</th></tr>
+      <tr><td>Cortex futuristic</td><td style="font-family:'Orbitron',sans-serif">Orbitron</td><td>Geist</td><td>Geist Mono</td></tr>
+      <tr><td>Technical editorial</td><td style="font-family:'Space Grotesk',sans-serif">Space Grotesk</td><td>Geist</td><td>Geist Mono</td></tr>
+      <tr><td>Geometric modern</td><td style="font-family:'Sora',sans-serif">Sora</td><td>Geist</td><td>Geist Mono</td></tr>
+      <tr><td>Research journal</td><td style="font-family:'IBM Plex Sans',sans-serif">IBM Plex Sans</td><td>IBM Plex Sans</td><td>IBM Plex Mono</td></tr>
+      <tr><td>Renaissance editorial</td><td style="font-family:'Newsreader',serif">Newsreader</td><td>Geist</td><td>Geist Mono</td></tr>
+    </table></div>
+    <p class="meta">Web sizes: display 32–48 · section 20–24 · chart title 16–18 · body 15–16 · labels 12–14 px. Go much larger for video at phone size.</p>
+  </div>
+
+  <div class="block">
+    <h2>Video and motion</h2>
+    <div class="scroll"><table>
+      <tr><th>Font</th><th>Use it for</th></tr>
+      <tr><td style="font-family:'Space Grotesk',sans-serif"><b>Space Grotesk</b></td><td>Everyday video titles, charts, explanatory overlays. Suggested workhorse.</td></tr>
+      <tr><td style="font-family:'Orbitron',sans-serif"><b>Orbitron</b></td><td>Short technical hooks, product reveals, futuristic animation.</td></tr>
+      <tr><td style="font-family:'Sora',sans-serif"><b>Sora</b></td><td>Product walkthroughs, clean motion graphics.</td></tr>
+      <tr><td style="font-family:'IBM Plex Sans',sans-serif"><b>IBM Plex</b></td><td>Detailed data essays and analytical breakdowns.</td></tr>
+      <tr><td style="font-family:'Newsreader',serif"><b>Newsreader</b></td><td>Editorial openings, storytelling, reflective essays.</td></tr>
+    </table></div>
+    <ul>
+      <li>Larger type, stronger weights, fewer words for phone viewing.</li>
+      <li>Keep one pairing within a scene; switch only at deliberate section boundaries.</li>
+      <li>Keep series colors and category meanings stable through a piece.</li>
+      <li>Instagram 1080×1920: keep essentials inside x 35–980, y 220–1470.</li>
+      <li>The persistent title is the only added text unless Brian asks for more. No word cards or text baked into PNGs.</li>
+    </ul>
+  </div>
+
+  <div class="block">
+    <h2>Charts and composition</h2>
+    <ul>
+      <li>Stable color mappings; pair color with names and line patterns (organic solid, paid dashed).</li>
+      <li>Faint grids, explicit units, readable labels, restrained fills.</li>
+      <li>Never mix dollars and counts on one scale. Tell zero apart from missing.</li>
+      <li>Orbitron for short chart titles only; Geist labels; Geist Mono summaries.</li>
+      <li>Thin borders, 10–12 px corners, little or no shadow. Gold used selectively, no metallic gradients.</li>
+      <li>Renaissance comes through hue and proportion, not ornamental frames or aged textures.</li>
+    </ul>
+  </div>
+</section>
+</div>
+
+<script>
+const tabs=[...document.querySelectorAll('nav button')];
+function show(id){
+  tabs.forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===id));
+  document.querySelectorAll('section.tab').forEach(s=>s.hidden=s.id!==id);
+}
+tabs.forEach(b=>b.addEventListener('click',()=>{show(b.dataset.tab);try{history.replaceState(null,'','#'+b.dataset.tab)}catch(e){}}));
+const h=location.hash.slice(1); if(h==='guidelines'||h==='strategy') show(h);
+</script>

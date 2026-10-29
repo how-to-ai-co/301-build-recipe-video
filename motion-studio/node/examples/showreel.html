@@ -1,0 +1,190 @@
+<style>html,body{margin:0;background:#141413}canvas{display:block}</style>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script>
+// Prompt: "make a dynamic 15-second motion graphics video that shows what an incredible
+// motion designer you are, like it's your showreel for a résumé. go all out."
+const W = 1080, H = 1920, DUR = 15, BEAT = 0.5;            // 120 BPM, one bar = 2s
+const BG = '#141413', INK = '#F0EEE6', ACC = '#D97757';
+const DISPLAY = '"Helvetica Neue", Helvetica, Arial, sans-serif';
+const MONO = 'Menlo, Monaco, monospace';
+const g = document.getElementById('c').getContext('2d');
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const lerp = (a, b, s) => a + (b - a) * s;
+
+function spring(t, k = 170, d = 26) {
+  if (t <= 0) return 0;
+  const w0 = Math.sqrt(k), z = d / (2 * w0);
+  if (z < 1) {
+    const wd = w0 * Math.sqrt(1 - z * z);
+    return 1 - Math.exp(-z * w0 * t) * (Math.cos(wd * t) + (z * w0 / wd) * Math.sin(wd * t));
+  }
+  return 1 - Math.exp(-w0 * t) * (1 + w0 * t);
+}
+// One spring per change, so a value with many targets stays a pure function of t
+function track(t, keys, k = 170, d = 26) {
+  let v = keys[0][1];
+  for (let i = 1; i < keys.length; i++) v += (keys[i][1] - keys[i - 1][1]) * spring(t - keys[i][0], k, d);
+  return v;
+}
+function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+  let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+  t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function rrect(x, y, w, h, r) {
+  r = Math.max(0, Math.min(r, w / 2, h / 2));
+  g.beginPath(); g.roundRect(x, y, w, h, r);
+}
+
+const SCENES = [
+  // 1. Hook: MOVE slams in letter by letter, then the camera flies through the O
+  { from: 0, to: 2, draw(t) {
+      g.font = `900 280px ${DISPLAY}`; g.textBaseline = 'alphabetic';
+      const L = ['M', 'O', 'V', 'E'], ws = L.map(c => g.measureText(c).width), gap = 6;
+      const total = ws.reduce((a, b) => a + b) + gap * 3, x0 = (W - total) / 2, base = 1040;
+      const oc = x0 + ws[0] + gap + ws[1] / 2, ocy = base - 100;
+      const z = t < 1.35 ? 1 : 1 + Math.pow((t - 1.35) / 0.65, 3) * 70;
+      g.save(); g.translate(oc, ocy); g.scale(z, z); g.translate(-oc, -ocy);
+      let x = x0;
+      L.forEach((c, i) => {
+        const s = spring(t - 0.06 * i, 340, 22), dir = i % 2 ? -1 : 1;
+        g.fillStyle = i === 1 ? ACC : INK;
+        g.fillText(c, x, base + dir * 1300 * (1 - s));
+        x += ws[i] + gap;
+      });
+      const u = spring(t - 0.45, 260, 24);
+      g.fillStyle = ACC; g.fillRect(x0, base + 40, total * u, 22);
+      g.font = `600 54px ${MONO}`; g.fillStyle = INK;
+      const label = 'SHOWREEL / 2026', n = Math.floor(clamp((t - 0.6) / 0.5) * label.length);
+      g.fillText(label.slice(0, n), x0, base + 140);
+      g.restore();
+      const flood = Math.pow(clamp((t - 1.5) / 0.5), 2) * 1500;
+      if (flood > 0) { g.fillStyle = ACC; g.beginPath(); g.arc(oc, ocy, flood, 0, 7); g.fill(); }
+  }},
+  // 2. Type stack: words scroll one per beat, the live word fills with the accent
+  { from: 2, to: 4, draw(t) {
+      const words = ['TYPE', 'TIMING', 'TENSION', 'TEMPO', 'TASTE'];
+      const idx = track(t, [[0, 0], [0.5, 1], [1, 2], [1.5, 3]], 260, 24);
+      g.font = `900 210px ${DISPLAY}`; g.textBaseline = 'middle'; g.lineWidth = 4;
+      const enter = spring(t, 220, 24);
+      words.forEach((w, i) => {
+        const y = H / 2 + (i - idx) * 250 + (1 - enter) * 300;
+        const live = clamp(1 - Math.abs(i - idx));
+        g.strokeStyle = INK; g.strokeText(w, 70, y);
+        if (live > 0) {
+          g.save(); g.beginPath(); g.rect(70, y - 120, 1000 * live, 240); g.clip();
+          g.fillStyle = ACC; g.fillText(w, 70, y); g.restore();
+        }
+      });
+      g.fillStyle = ACC; g.fillRect(36, H / 2 - 110, 10, 220 * spring(t - 0.1, 260, 22));
+      g.fillRect(-W * spring(t, 200, 26), 0, W, H);
+  }},
+  // 3. One shape, never cut: circle → diamond → pill → bar → floods the frame
+  { from: 4, to: 6, draw(t) {
+      const K = 300, D = 26;
+      const w = track(t, [[0, 0], [0.02, 320], [0.5, 420], [1, 820], [1.5, 170], [1.65, 2600]], K, D);
+      const h = track(t, [[0, 0], [0.02, 320], [0.5, 420], [1, 180], [1.5, 1000], [1.65, 2600]], K, D);
+      const r = track(t, [[0, 160], [0.5, 36], [1, 90], [1.5, 85], [1.65, 0]], K, D);
+      const rot = track(t, [[0, 0], [0.5, Math.PI / 4], [1, 0], [1.5, 0]], K, D);
+      const fill = t > 1.65 ? ACC : INK;
+      const r2 = rng(11);
+      for (let i = 0; i < 14; i++) {                       // orbiting satellites
+        const a = i / 14 * Math.PI * 2 + t * 1.6 + r2() * 0.3;
+        const rad = 470 + 60 * Math.sin(t * 4 + i);
+        const s = spring(t - 0.1 - i * 0.02, 260, 20) * (1 - clamp((t - 1.5) / 0.2));
+        g.fillStyle = i % 4 ? INK : ACC;
+        g.beginPath(); g.arc(W / 2 + Math.cos(a) * rad, H / 2 + Math.sin(a) * rad, 12 * s, 0, 7); g.fill();
+      }
+      g.save(); g.translate(W / 2, H / 2); g.rotate(rot);
+      g.fillStyle = fill; rrect(-w / 2, -h / 2, w, h, r); g.fill();
+      const pill = clamp(1 - Math.abs(t - 1.15) / 0.2);
+      if (pill > 0 && t < 1.4) {
+        g.fillStyle = BG; g.globalAlpha = pill;
+        g.font = `800 72px ${DISPLAY}`; g.textAlign = 'center'; g.textBaseline = 'middle';
+        g.fillText('▶  PLAY', 0, 4); g.globalAlpha = 1; g.textAlign = 'left';
+      }
+      g.restore();
+  }},
+  // 4. Ripple grid: the accent panel lifts, tiles pop in a wave from the bottom, then flip
+  { from: 6, to: 8, draw(t) {
+      const cols = 7, rows = 12, cell = 140, ox = (W - cols * cell) / 2, oy = (H - rows * cell) / 2;
+      const r = rng(5), px = W / 2, py = H - 200;
+      for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) {
+        const cx = ox + i * cell + cell / 2, cy = oy + j * cell + cell / 2;
+        const d = Math.hypot(cx - px, cy - py);
+        const s = spring(t - 0.15 - d * 0.0005, 320, 18);
+        const flip = spring(t - 1.0 - d * 0.0004, 280, 22);
+        const acc = r() < 0.16;
+        g.save(); g.translate(cx, cy); g.rotate(flip * Math.PI / 2);
+        const sz = 104 * s * (1 - 0.35 * Math.sin(flip * Math.PI));
+        g.fillStyle = acc ? ACC : INK; rrect(-sz / 2, -sz / 2, sz, sz, 14 * flip); g.fill();
+        g.restore();
+      }
+      const lift = spring(t, 160, 24);
+      g.fillStyle = ACC; g.fillRect(0, -H * lift, W, H);
+  }},
+  // 5. Data: a counter rolls to 97 while the bars build on the beat
+  { from: 8, to: 10, draw(t) {
+      const vals = [0.30, 0.46, 0.40, 0.64, 0.80, 0.97], base = 1560, bw = 120, gap = 34, x0 = 90;
+      g.fillStyle = INK; g.fillRect(x0, base, (W - 180) * spring(t - 0.02, 200, 26), 4);
+      vals.forEach((v, i) => {
+        const s = spring(t - 0.15 - i * 0.12, 240, 19), hh = v * 820 * s;
+        g.fillStyle = i === vals.length - 1 ? ACC : INK;
+        g.fillRect(x0 + i * (bw + gap), base - hh, bw, hh);
+      });
+      const n = Math.round(97 * clamp(spring(t - 0.15, 60, 16)));
+      g.fillStyle = INK; g.font = `900 250px ${DISPLAY}`; g.textBaseline = 'alphabetic';
+      const rise = spring(t - 0.05, 260, 24);
+      g.save(); g.beginPath(); g.rect(0, 280, W, 300); g.clip();
+      g.fillText(n + '%', 80, 540 + (1 - rise) * 300); g.restore();
+      g.font = `600 54px ${MONO}`; g.fillStyle = ACC;
+      const label = 'MOTION QUALITY, Q3', k = Math.floor(clamp((t - 0.35) / 0.4) * label.length);
+      g.fillText(label.slice(0, k), 86, 640);
+  }},
+  // 6. Depth: a twisting tunnel of frames, accelerating into the last shot
+  { from: 10, to: 12, draw(t) {
+      const phase = t * 2.4 + Math.pow(Math.max(0, t - 1.3), 2) * 30;
+      const N = 18, f = phase % 1, start = Math.floor(phase);
+      for (let i = N; i >= 1; i--) {
+        const dz = i - f, sc = 1500 / (dz * 1.0 + 0.4);
+        const ring = start + i;
+        g.save(); g.translate(W / 2, H / 2); g.rotate(dz * 0.12 + t * 0.4);
+        g.strokeStyle = ring % 4 === 0 ? ACC : INK; g.lineWidth = Math.max(1, 30 / dz);
+        g.globalAlpha = clamp(1.6 - dz / N * 1.5);
+        rrect(-sc * 0.56, -sc, sc * 1.12, sc * 2, sc * 0.08); g.stroke(); g.restore();
+      }
+      g.globalAlpha = 1;
+      const s = spring(t - 0.2, 260, 20) * (1 - clamp((t - 1.4) / 0.25));
+      g.save(); g.translate(W / 2, H / 2); g.scale(0.4 + 0.6 * s, 0.4 + 0.6 * s); g.globalAlpha = clamp(s * 3);
+      g.fillStyle = ACC; g.font = `900 200px ${DISPLAY}`; g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.lineWidth = 36; g.lineJoin = 'round'; g.strokeStyle = BG; g.strokeText('DEPTH', 0, 0);
+      g.fillText('DEPTH', 0, 0); g.restore(); g.textAlign = 'left';
+  }},
+  // 7. Lockup: a dot drops, stretches into a rule, the name rises from behind it
+  { from: 12, to: 15.01, draw(t) {
+      const ruleY = 1060, x0 = 120;
+      const drop = spring(t, 300, 20), stretch = spring(t - 0.25, 220, 24);
+      const dotY = lerp(-60, ruleY, drop), lw = lerp(60, W - 2 * x0, stretch), th = lerp(60, 24, stretch);
+      g.fillStyle = ACC; rrect(lerp(W / 2 - 30, x0, stretch), dotY - th / 2, lw, th, th / 2); g.fill();
+      const rise = spring(t - 0.45, 200, 24);
+      g.save(); g.beginPath(); g.rect(0, ruleY - 300, W, 288); g.clip();
+      g.fillStyle = INK; g.font = `900 190px ${DISPLAY}`; g.textBaseline = 'alphabetic';
+      g.fillText('OPUS 5.5', x0 - 8, ruleY - 40 + (1 - rise) * 280); g.restore();
+      g.fillStyle = INK; g.font = `600 54px ${MONO}`;
+      const lines = ['MOTION DESIGNER', 'AVAILABLE FOR WORK'];
+      lines.forEach((l, i) => {
+        const k = Math.floor(clamp((t - 0.85 - i * 0.5) / 0.45) * l.length);
+        g.fillStyle = i ? ACC : INK; g.fillText(l.slice(0, k), x0, ruleY + 120 + i * 84);
+      });
+      if (t > 2.2 && Math.floor(t * 4) % 2 === 0) { g.fillStyle = ACC; g.fillRect(x0 + 610, ruleY + 158, 30, 56); }
+  }},
+];
+
+function draw(t) {
+  g.fillStyle = BG; g.fillRect(0, 0, W, H);
+  for (const s of SCENES) if (t >= s.from && t < s.to) s.draw(t - s.from);
+}
+window.seek = (t) => { draw(t); return true; };
+if (!navigator.webdriver) {
+  const t0 = performance.now();
+  (function loop() { draw(((performance.now() - t0) / 1000) % DUR); requestAnimationFrame(loop); })();
+}
+</script>

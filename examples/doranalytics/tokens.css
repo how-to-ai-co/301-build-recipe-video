@@ -1,0 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Orbitron:wght@500;700&family=Space+Grotesk:wght@500;700&family=Sora:wght@500;700&family=IBM+Plex+Sans:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&family=Newsreader:wght@500;700&display=swap');
+:root{--brand-display:'Orbitron',sans-serif;--brand-body:'Geist',sans-serif;--brand-mono:'Geist Mono',monospace}
+[data-brand-palette="florentine-original"]{--brand-surface:#F3EDE1;--brand-text:#20231F;--brand-muted:#685F52;--brand-grid:#D8D0C1;--chart-1:#103F35;--chart-2:#B99A58;--chart-3:#6B303D;--chart-4:#88715B}
+[data-brand-palette="sharper-light"]{--brand-surface:#F3EDE1;--brand-text:#20231F;--brand-muted:#685F52;--brand-grid:#D8D0C1;--chart-1:#08745C;--chart-2:#A52F50;--chart-3:#4655BB;--chart-4:#B97808}
+[data-brand-palette="phthalo-luminous"]{--brand-surface:#082E28;--brand-text:#F3EDE1;--brand-muted:#B6C8BD;--brand-grid:#31534A;--chart-1:#35E8B5;--chart-2:#FFC247;--chart-3:#F47798;--chart-4:#9BAAFF}
+[data-brand-palette="ink-florentine"]{--brand-surface:#20231F;--brand-text:#F3EDE1;--brand-muted:#C2BBAE;--brand-grid:#45483F;--chart-1:#35E8B5;--chart-2:#FFC247;--chart-3:#F47798;--chart-4:#9BAAFF}

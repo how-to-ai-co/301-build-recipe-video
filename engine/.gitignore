@@ -1,0 +1,6 @@
+.env
+.venv/
+node_modules/
+ads/**/*.mp4
+public/audio/*.wav
+.ads.tmp
