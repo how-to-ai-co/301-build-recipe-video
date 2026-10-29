@@ -1,11 +1,14 @@
 import type { CSSProperties } from "react";
 import { ArrowUpRight } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { REPO, prompt } from "@/content/inside";
+import { Topbar } from "./topbar";
 import recipe from "@/content/recipe.json";
 import { CopyPrompt } from "./copy-prompt";
 
 const lines = (recipe as string).trimEnd().split("\n").length;
 const css = (v: Record<string, string | number>) => v as CSSProperties;
-const REPO = "https://github.com/how-to-ai-co/301-build-recipe-video";
 
 function Bring() {
   return <div className="viz viz-bring">
@@ -71,11 +74,12 @@ const steps = [
 export default function Page() {
   return <>
     <div className="wrap">
-      <div className="topbar"><span className="wordmark">How to AI<span className="dot">.</span></span><span className="eyebrow">AI 301 · Video</span></div>
+      <Topbar active="steps" />
 
       <header className="hero">
         <h1>Your video, made.</h1>
         <CopyPrompt text={recipe as string} lines={lines} />
+        <a className="repo-link" href={REPO} target="_blank" rel="noreferrer"><img src="/logos/github.svg" alt="" width={16} height={16} /> github.com/how-to-ai-co/301-build-recipe-video <ArrowUpRight size={14} aria-hidden="true" /></a>
       </header>
 
       <ol className="flow-steps" aria-label="What you get">
@@ -84,11 +88,25 @@ export default function Page() {
             <span className="big-num">{i + 1}</span>
             <h2>{s.t}</h2>
             <p>{s.d}</p>
-            {s.link && <a className="step-link" href={REPO} target="_blank" rel="noreferrer">See the video engine <ArrowUpRight size={15} aria-hidden="true" /></a>}
+            {s.link && <a className="step-link" href="inside">See everything inside <ArrowUpRight size={15} aria-hidden="true" /></a>}
           </div>
           <div aria-hidden="true">{s.v}</div>
         </li>)}
       </ol>
+
+      <section className="does" id="prompt">
+        <span className="eyebrow accent">The prompt</span>
+        <h2>What the prompt does</h2>
+        <p className="lede">You paste it once. Claude works through eight steps, and only stops for your answers, your approvals and anything that costs money.</p>
+        <ol className="does-list">
+          {prompt.map((p, i) => <li key={p.t}><span className="n">{i + 1}</span><div><b>{p.t}</b><p>{p.d}</p></div></li>)}
+        </ol>
+        <details className="full">
+          <summary>Read the full prompt</summary>
+          <div className="md"><ReactMarkdown remarkPlugins={[remarkGfm]}>{recipe as string}</ReactMarkdown></div>
+        </details>
+        <a className="step-link" href="inside">Everything inside the repo <ArrowUpRight size={15} aria-hidden="true" /></a>
+      </section>
     </div>
     <footer className="foot">How to AI · AI 301</footer>
   </>;
