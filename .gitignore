@@ -33,3 +33,5 @@ next-env.d.ts
 # Only each breakdown.md (our own notes and numbers) and the README are kept.
 references/videos/*/*
 !references/videos/*/breakdown.md
+.vercel
+.env*
