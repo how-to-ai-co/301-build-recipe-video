@@ -19,13 +19,12 @@ const costLabel = { free: "Free", paid: "Pay as you go", mac: "Mac" } as const;
 export default function Inside() {
   const skills = packs.find(p => p.id === "skills")!.features.length;
   return <>
-    <div className="wrap"><Topbar active="inside" /></div>
-
-    <header className="showcase-hero">
-      <div className="wrap-inner">
-        <span className="pill-free">Free with AI 301</span>
+    <div className="wrap">
+      <Topbar active="inside" />
+      <header className="hero inside-hero">
+        <div className="course-tag"><span className="course-num">AI 301</span><span>Included with the course</span></div>
         <h1>Everything you get.</h1>
-        <p>{totalFeatures} features in {packs.length} packs, in one folder you keep. Clone it once and Claude can reach for any of it. Most of it needs no account and no API key.</p>
+        <p className="lede">{totalFeatures} features in {packs.length} packs, in one folder you keep. Clone it once and Claude can reach for any of it. Most of it needs no account and no API key.</p>
         <ul className="hero-stats">
           <li><b>{packs.length}</b><span>packs</span></li>
           <li><b>{totalFeatures}</b><span>features</span></li>
@@ -34,10 +33,10 @@ export default function Inside() {
         </ul>
         <div className="hero-cta">
           <a className="btn" href="./">Get the prompt</a>
-          <a className="btn btn-ghost" href={REPO} target="_blank" rel="noreferrer"><img src="/logos/github.svg" alt="" width={16} height={16} className="invert" /> Open on GitHub</a>
+          <a className="btn btn-secondary" href={REPO} target="_blank" rel="noreferrer"><img src="/logos/github.svg" alt="" width={16} height={16} /> Open on GitHub</a>
         </div>
-      </div>
-    </header>
+      </header>
+    </div>
 
     <div className="wrap">
       <section className="headliners" aria-labelledby="hl">

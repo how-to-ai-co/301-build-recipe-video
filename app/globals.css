@@ -388,3 +388,37 @@ section[aria-labelledby="packs"] { margin-top: 64px }
 .feat-go { top: 16px; right: 8px }
 @media (max-width: 1000px) { .feats li:nth-child(n) a { padding-left: 0 } .feats li:nth-child(2n) a { padding-left: 4px } }
 @media (max-width: 560px) { .feats li:nth-child(n) a { padding-left: 0 } .feat-go { opacity: .6 } }
+
+/* ===== v3: one light look everywhere ===== */
+.course-tag { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 18px; font: 600 13px var(--ui); color: var(--muted); letter-spacing: .02em }
+.course-num { font: 700 13px var(--ui); letter-spacing: .06em; color: var(--accent-ink); background: var(--accent-tint); border: 1px solid #f9cdb3; border-radius: 6px; padding: 3px 9px }
+
+/* inside hero: same as the home hero */
+.inside-hero { max-width: none }
+.inside-hero .lede { margin-top: 18px; max-width: 40rem }
+.hero-stats { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px }
+.hero-stats li { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; min-width: 120px }
+.hero-stats b { display: block; color: var(--ink); font: 700 32px/1 var(--serif) }
+.hero-stats b::first-letter { color: inherit }
+.hero-stats span { font-size: 13px; color: var(--muted) }
+.hero-cta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px }
+
+/* home teaser: a light card */
+.teaser { background: var(--card); color: var(--muted); border: 1px solid var(--line); border-left: 3px solid var(--accent) }
+.teaser b { color: var(--ink) }
+.teaser > svg { color: var(--accent-ink) }
+.teaser-icons .tile { border-color: var(--card) }
+
+/* home "what you get": a light card like the rest */
+.gets { background: var(--card); color: var(--text); border: 1px solid var(--line); border-radius: 14px; padding: 32px }
+.gets::before { display: none }
+.gets h2 { color: var(--ink); margin-top: 6px }
+.gets-head p { color: var(--muted) }
+.gets-hl a { background: var(--bg); border: 1px solid var(--line) }
+.gets-hl b { color: var(--ink) }
+.gets-hl span:last-child { color: var(--muted) }
+.gets-packs a { background: #fff; border: 1px solid var(--line); color: var(--ink) }
+@media (max-width: 760px) { .gets { padding: 22px 18px } }
+
+.course-tag { font-size: 16px; gap: 12px; margin-bottom: 20px }
+.course-num { font-size: 16px; padding: 5px 12px; border-radius: 8px }

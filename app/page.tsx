@@ -26,6 +26,7 @@ export default function Page() {
       <Topbar active="steps" />
 
       <header className="hero">
+        <div className="course-tag"><span className="course-num">AI 301</span><span>Live course · Video</span></div>
         <h1>Your video, made.</h1>
         <CopyPrompt text={recipe as string} lines={lines} />
         <a className="repo-link" href={REPO} target="_blank" rel="noreferrer"><img src="/logos/github.svg" alt="" width={16} height={16} /> github.com/how-to-ai-co/301-build-recipe-video <ArrowUpRight size={14} aria-hidden="true" /></a>
@@ -50,7 +51,7 @@ export default function Page() {
 
       <section className="gets" aria-labelledby="gets">
         <div className="gets-head">
-          <span className="pill-free">Free with AI 301</span>
+          <span className="eyebrow accent">Included with AI 301</span>
           <h2 id="gets">What you get: {totalFeatures} features in {packs.length} packs</h2>
           <p>The prompt sets up a folder you keep. Here&apos;s what&apos;s in it.</p>
         </div>
