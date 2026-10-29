@@ -1,10 +1,16 @@
-// Everything in the repo, for the "What's inside" page. Keep in step with the folders.
+// Everything in the repo, packaged for the "What's inside" page. Keep in step with the folders.
 export const REPO = "https://github.com/how-to-ai-co/301-build-recipe-video";
 export const tree = (path: string) => `${REPO}/tree/main/${path}`;
 export const blob = (path: string) => `${REPO}/blob/main/${path}`;
+export const repoLink = (path: string) => (/\.[a-z]+$/.test(path) ? blob(path) : tree(path));
 
-export type Item = { name: string; path: string; what: string; cost?: "free" | "paid" | "mac" };
-export type Section = { id: string; title: string; intro: string; folder?: string; items: Item[] };
+export type Icon =
+  | "Brain" | "Clapperboard" | "Scissors" | "AudioWaveform" | "Shapes" | "Palette" | "Library"
+  | "ListChecks" | "Paintbrush" | "Sparkles" | "Repeat" | "ScanEye" | "Mic" | "Smartphone";
+export type Cost = "free" | "paid" | "mac";
+export type Feature = { title: string; what: string; path: string; cost?: Cost };
+export type Pack = { id: string; name: string; tagline: string; icon: Icon; tone: string; folder: string; features: Feature[] };
+export type Headliner = { title: string; pitch: string; icon: Icon; tone: string; gets: string[]; path: string };
 
 export const prompt = [
   { t: "Asks you everything up front", d: "What you're making, where it goes, a video you like, your footage, the message, your website, voice and music. Then it stops asking." },
@@ -17,128 +23,149 @@ export const prompt = [
   { t: "Exports and hands off", d: "Full quality in the right shape, a delivery check, the file opened for you, and a prompt to pick up where you left off." },
 ];
 
-export const sections: Section[] = [
+export const headliners: Headliner[] = [
   {
-    id: "skills", title: "Skills Claude loads on its own", folder: ".claude/skills",
-    intro: "Open the folder in Claude Code and these switch on by themselves when the task fits.",
-    items: [
-      { name: "video-edit", path: ".claude/skills/video-edit/SKILL.md", what: "Reads your saved edit rules before every plan or render, and checks each draft against them yes or no." },
-      { name: "refine-video-edit", path: ".claude/skills/refine-video-edit/SKILL.md", what: "Turns your notes on a draft into dated yes/no rules. Reusable notes become rules; one-off fixes stay with that video." },
-      { name: "Your edit rules", path: ".claude/skills/video-edit/references/edit-rules.md", what: "The rules file itself, with starter rules for pacing, text, overlays, audio, captions, look and delivery. Delete any you disagree with." },
-      { name: "reference-video", path: ".claude/skills/reference-video/SKILL.md", what: "Paste an Instagram, TikTok or YouTube link and say \"make mine like this.\" Claude breaks the style down and applies it to your footage." },
-      { name: "yap-video-plan", path: ".claude/skills/yap-video-plan/SKILL.md", what: "Plans a talking-head edit: the full script with times, proposed cuts and overlays, title and playback speed." },
-      { name: "visual-hooks-overlays", path: ".claude/skills/visual-hooks-overlays/SKILL.md", what: "Picks what goes on screen and makes the overlays in one shared look." },
-      { name: "overlay-timing", path: ".claude/skills/overlay-timing/SKILL.md", what: "Times each overlay to the exact spoken word, with enough time to read it." },
-      { name: "yap-cover-image", path: ".claude/skills/yap-cover-image/SKILL.md", what: "Makes a 9:16 cover image for every finished video and checks it at thumbnail size." },
-      { name: "caption", path: ".claude/skills/caption/SKILL.md", what: "Writes the post caption in your voice, and learns from the ones you approve." },
+    title: "An editor that learns your taste", icon: "Repeat", tone: "orange", path: ".claude/skills/refine-video-edit/SKILL.md",
+    pitch: "Say \"bigger title\" once. Every note you give becomes a saved rule, so the next video starts where the last one finished.",
+    gets: ["Your notes saved as yes/no rules", "Every draft checked against them", "Gets sharper every video"],
+  },
+  {
+    title: "Make mine like this", icon: "ScanEye", tone: "violet", path: ".claude/skills/reference-video/SKILL.md",
+    pitch: "Paste any Reel, TikTok or YouTube link. Claude measures the pacing, cuts and text, then gives your footage the same feel.",
+    gets: ["Cuts per second and shot length", "A contact sheet of every shot", "A style breakdown you can reuse"],
+  },
+  {
+    title: "Talking-head editor", icon: "Mic", tone: "teal", path: "recipes/yap.md",
+    pitch: "Drop in a raw take from your phone. Out comes a tight, captioned, Instagram-ready video with a title hook and overlays.",
+    gets: ["Pauses and ums cut automatically", "Overlays timed to your words", "Audio cleaned to Instagram's level"],
+  },
+  {
+    title: "Motion graphics studio", icon: "Shapes", tone: "blue", path: "motion-studio/README.md",
+    pitch: "Animated logos, stats that count up, charts that draw themselves. Claude designs them in code and exports a real MP4.",
+    gets: ["Works in Chrome, no installs", "Frame-exact MP4 with sound", "9:16, 4:5, 1:1 and 16:9"],
+  },
+];
+
+export const packs: Pack[] = [
+  {
+    id: "skills", name: "Smart Skills", icon: "Brain", tone: "orange", folder: ".claude/skills",
+    tagline: "Nine skills that switch on by themselves when you open the folder.",
+    features: [
+      { title: "Edits that remember", what: "Reads your saved rules before every plan and checks each draft against them.", path: ".claude/skills/video-edit/SKILL.md" },
+      { title: "Notes into rules", what: "Turns your feedback into dated rules. One-off fixes stay with that video.", path: ".claude/skills/refine-video-edit/SKILL.md" },
+      { title: "Your personal rulebook", what: "Starter rules for pacing, text, audio and look. Keep, change or delete any.", path: ".claude/skills/video-edit/references/edit-rules.md" },
+      { title: "Style decoder", what: "Breaks down any video you love and applies it to yours.", path: ".claude/skills/reference-video/SKILL.md" },
+      { title: "Edit planner", what: "Every line with its timestamp, the proposed cut, the overlay, the title and speed.", path: ".claude/skills/yap-video-plan/SKILL.md" },
+      { title: "Overlay designer", what: "Picks what goes on screen and makes it all in one look.", path: ".claude/skills/visual-hooks-overlays/SKILL.md" },
+      { title: "Word-perfect timing", what: "Lands each overlay on the exact spoken word, held long enough to read.", path: ".claude/skills/overlay-timing/SKILL.md" },
+      { title: "Cover maker", what: "A 9:16 cover for every video, checked at thumbnail size.", path: ".claude/skills/yap-cover-image/SKILL.md" },
+      { title: "Caption writer", what: "Writes the post caption in your voice and learns from the ones you approve.", path: ".claude/skills/caption/SKILL.md" },
     ],
   },
   {
-    id: "formats", title: "Videos it can make", folder: "parts",
-    intro: "Each format has a deep guide Claude reads when you pick it.",
-    items: [
-      { name: "Talking head (Yap)", path: "recipes/yap.md", what: "Cuts the silences and stumbles, speeds the take up a little, cleans the audio, adds a title hook and drops in overlays as you say the matching word.", cost: "free" },
-      { name: "Creator clips", path: "parts/45-creator-clips.md", what: "Your footage with a hook and word-synced captions burned on, trimmed and joined. No editing software.", cost: "free" },
-      { name: "Words on screen (OneWord)", path: "parts/20-format-rsvp.md", what: "One word at a time on a dark screen, timed to your voice. No footage needed.", cost: "free" },
-      { name: "Captions over artwork (Cards)", path: "parts/30-format-captions.md", what: "Captions over your own graphics, with hard cuts.", cost: "free" },
-      { name: "Aerial mood piece", path: "parts/40-format-aerial.md", what: "A 9-second silent landscape clip with a text block and your logo. Free with your own clip; generating the clip costs money.", cost: "free" },
-      { name: "Motion graphics", path: "motion-studio/README.md", what: "Animated logos, stats that count up, charts that draw themselves, short explainers. Written in code and exported to MP4.", cost: "free" },
-      { name: "Dialogue scenes with actors", path: "parts/60-format-kling-dialogue.md", what: "The Kling setup and the full record of one finished acted film. The most expensive job by far.", cost: "paid" },
+    id: "formats", name: "Format Library", icon: "Clapperboard", tone: "teal", folder: "parts",
+    tagline: "Seven ready-made video formats, each with its own playbook.",
+    features: [
+      { title: "Talking head", what: "Tight cuts, a title hook and overlays on the word.", path: "recipes/yap.md", cost: "free" },
+      { title: "Creator clips", what: "Your footage with a hook and synced captions. No editing app.", path: "parts/45-creator-clips.md", cost: "free" },
+      { title: "One word at a time", what: "Kinetic text timed to your voice. No footage needed.", path: "parts/20-format-rsvp.md", cost: "free" },
+      { title: "Captions over artwork", what: "Your graphics with captions and hard cuts.", path: "parts/30-format-captions.md", cost: "free" },
+      { title: "Aerial mood piece", what: "A 9-second landscape with your words and logo. Works with the sound off.", path: "parts/40-format-aerial.md", cost: "free" },
+      { title: "Motion graphics", what: "Logos, stats, charts and explainers, exported to MP4.", path: "motion-studio/README.md", cost: "free" },
+      { title: "Scenes with actors", what: "The Kling setup and the record of one finished acted film.", path: "parts/60-format-kling-dialogue.md", cost: "paid" },
     ],
   },
   {
-    id: "tools", title: "Editing tools", folder: "engine/scripts",
-    intro: "Python scripts Claude runs for you. You never need to type these.",
-    items: [
-      { name: "yap.py", path: "engine/scripts/yap.py", what: "The whole talking-head edit in one script: cut stumbles, flash a logo, hold a chart, swap the title for a call to action, render.", cost: "free" },
-      { name: "yap_islands.py", path: "engine/scripts/yap_islands.py", what: "The zero-gap trim: finds every bit of sound and lists the ums, breaths and clicks so they can go.", cost: "free" },
-      { name: "clip.py", path: "engine/scripts/clip.py", what: "Frame-accurate trims, and joins clips with hard cuts only.", cost: "free" },
-      { name: "overlay.py", path: "engine/scripts/overlay.py", what: "Burns a hook onto a video, transcribes the speech and burns on synced captions.", cost: "free" },
-      { name: "reference.py", path: "engine/scripts/reference.py", what: "Downloads a reference video and measures it: length, cuts per second, shot length, loudness, a contact sheet and a style breakdown.", cost: "free" },
-      { name: "grade.py", path: "engine/scripts/grade.py", what: "The realism pass. Takes the too-clean AI shine off with lower contrast, softer colour and moving film grain.", cost: "free" },
-      { name: "render_aerial.py", path: "engine/scripts/render_aerial.py", what: "Burns a text block and your logo onto a landscape clip.", cost: "free" },
-      { name: "cutout and cutout-person", path: "engine/bin", what: "Removes an image background with the Mac's built-in tools. Free, no API.", cost: "mac" },
-      { name: "Remotion compositions", path: "engine/src", what: "The code that draws OneWord, Cards, the app-bundling animation, a battery graphic and an explainer, in 9:16 and 4:5.", cost: "free" },
+    id: "editing", name: "Editing Suite", icon: "Scissors", tone: "violet", folder: "engine/scripts",
+    tagline: "The edit bay, run for you. You never type a command.",
+    features: [
+      { title: "One-script talking-head edit", what: "Cut stumbles, flash a logo, hold a chart, swap in a call to action, render.", path: "engine/scripts/yap.py", cost: "free" },
+      { title: "Zero-gap trim", what: "Finds every um, breath and click so the take is just words.", path: "engine/scripts/yap_islands.py", cost: "free" },
+      { title: "Frame-perfect cuts", what: "Trims to the frame and joins clips with clean hard cuts.", path: "engine/scripts/clip.py", cost: "free" },
+      { title: "Hooks and captions", what: "Burns on a hook and word-synced captions from your speech.", path: "engine/scripts/overlay.py", cost: "free" },
+      { title: "Film-look grade", what: "Takes the too-clean AI shine off with grain and softer colour.", path: "engine/scripts/grade.py", cost: "free" },
+      { title: "Reference analyser", what: "Measures any video: cuts, shot length, loudness, contact sheet.", path: "engine/scripts/reference.py", cost: "free" },
+      { title: "One-click cutouts", what: "Removes a background with the Mac's built-in tools. No API.", path: "engine/bin", cost: "mac" },
+      { title: "Animation components", what: "App logos flying into a chat box, a battery graphic, an explainer.", path: "engine/src", cost: "free" },
     ],
   },
   {
-    id: "sound", title: "Sound", folder: "engine/scripts",
-    intro: "Voice, music and loudness, mostly free.",
-    items: [
-      { name: "timings.py", path: "engine/scripts/timings.py", what: "Turns a voiceover into word-by-word timings with Whisper, so text lands on the word.", cost: "free" },
-      { name: "prosody.py", path: "engine/scripts/prosody.py", what: "Flags uptalk, where a sentence rises like a question when it should fall.", cost: "free" },
-      { name: "bed.py", path: "engine/scripts/bed.py", what: "Composes an original music bed that loops cleanly. You own it outright.", cost: "free" },
-      { name: "Yap audio recipe", path: "recipes/yap-audio.md", what: "Noise cleanup and levelling to Instagram's loudness (-14 LUFS).", cost: "free" },
-      { name: "Voice and music guide", path: "parts/10-voice-and-music.md", what: "Recording your own voice, generated voices and how to match a track's mood without using the track.", cost: "free" },
+    id: "sound", name: "Sound Studio", icon: "AudioWaveform", tone: "blue", folder: "engine/scripts",
+    tagline: "Voice, music and levels, without a licence in sight.",
+    features: [
+      { title: "Original music beds", what: "Composed on your machine, loops cleanly, yours outright.", path: "engine/scripts/bed.py", cost: "free" },
+      { title: "Word-by-word timing", what: "Whisper times every word so text lands on the beat.", path: "engine/scripts/timings.py", cost: "free" },
+      { title: "Delivery coach", what: "Flags sentences that rise like a question when they should land.", path: "engine/scripts/prosody.py", cost: "free" },
+      { title: "Instagram-ready audio", what: "Noise cleanup and levelling to -14 LUFS.", path: "recipes/yap-audio.md", cost: "free" },
+      { title: "Voice and music guide", what: "Record yourself, generate a voice, or match a track's mood.", path: "parts/10-voice-and-music.md", cost: "free" },
     ],
   },
   {
-    id: "generation", title: "AI generation (optional, costs money)", folder: "engine/scripts",
-    intro: "Nothing here runs without your yes. Claude names the service, what it makes and the price first.",
-    items: [
-      { name: "fal.py", path: "engine/scripts/fal.py", what: "Voices, talking people, lip sync, video cutouts and stills from one fal key. Dry run until you add --go.", cost: "paid" },
-      { name: "generate.py", path: "engine/scripts/generate.py", what: "Footage and stills on Replicate (Seedance, Veo, Kling, Nano Banana). Shows the price before spending.", cost: "paid" },
-      { name: "fal guide", path: "parts/55-generation-fal.md", what: "The first key to get, and what it covers.", cost: "paid" },
-      { name: "Replicate guide", path: "parts/50-generation-replicate.md", what: "Footage, stills and character sheets, with the full record of what worked.", cost: "paid" },
-      { name: "Keys and accounts", path: "parts/00-keys-and-accounts.md", what: "Signing up, where each key goes (engine/.env) and the traps, like credits that expire.", cost: "paid" },
+    id: "motion", name: "Motion Studio", icon: "Shapes", tone: "orange", folder: "motion-studio",
+    tagline: "Claude can't film, so it draws every frame in code.",
+    features: [
+      { title: "No-install studio", what: "One file in Chrome: Play, Contact sheet, Export MP4.", path: "motion-studio/browser/motion.html", cost: "free" },
+      { title: "Pro renderer", what: "Every frame rendered with motion blur and a generated score.", path: "motion-studio/node", cost: "free" },
+      { title: "Critique loop", what: "Claude reviews a contact sheet of its own frames before you see it.", path: "motion-studio/README.md" },
+      { title: "15-second showreel", what: "A 7-shot example to see the quality bar.", path: "motion-studio/node/examples/showreel.html" },
     ],
   },
   {
-    id: "rules", title: "Rulebooks and styles", folder: "recipes",
-    intro: "How a good edit is judged. The Yap rules are a worked example from one creator's real feedback.",
-    items: [
-      { name: "Yap formula", path: "recipes/yap.md", what: "The main rulebook: titles of three words or fewer, the screen changing about every second, real headlines and charts instead of text labels, drafts at 720p and finals at 1080p." },
-      { name: "Release check", path: "recipes/yap-release-check.md", what: "Two gates: approve the image picks before rendering, then a fresh-eyes check of the draft. Every past note is a yes/no line." },
-      { name: "Flash overlays", path: "recipes/flash-overlays.md", what: "How overlays flash in on the spoken word." },
-      { name: "Yap Depth", path: "styles/yap-depth/STYLE.md", what: "Title on screen, your original framing, big overlays behind your head." },
-      { name: "Oren Static Hooks", path: "styles/oren-static-hooks/STYLE.md", what: "Large objects on either side of your head." },
-      { name: "Editorial Tech", path: "styles/editorial-tech/STYLE.md", what: "Punch-in zooms, an italic hook, dark full-screen explainer animations." },
-      { name: "Mad Libs templates", path: "parts/95-madlibs-templates.md", what: "Take the structure of an ad you liked and fill in your own content." },
-      { name: "Make it your own", path: "parts/90-make-it-your-own.md", what: "Changing the look to your brand, and adding a new format." },
+    id: "styles", name: "Style Vault", icon: "Palette", tone: "teal", folder: "styles",
+    tagline: "Proven looks and rulebooks, built from real edits.",
+    features: [
+      { title: "The Yap formula", what: "The rulebook behind dozens of real edits: short titles, constant motion, real proof.", path: "recipes/yap.md" },
+      { title: "Two-gate release check", what: "Approve the images before render, then a fresh-eyes check of the draft.", path: "recipes/yap-release-check.md" },
+      { title: "Yap Depth", what: "Big overlays behind your head, title on screen.", path: "styles/yap-depth/STYLE.md" },
+      { title: "Static Hooks", what: "Bold objects either side of your head.", path: "styles/oren-static-hooks/STYLE.md" },
+      { title: "Editorial Tech", what: "Punch-in zooms, an italic hook, dark explainer cutaways.", path: "styles/editorial-tech/STYLE.md" },
+      { title: "Mad Libs templates", what: "Take an ad that worked and fill in yours.", path: "parts/95-madlibs-templates.md" },
     ],
   },
   {
-    id: "motion", title: "Motion studio", folder: "motion-studio",
-    intro: "Claude can't film. It writes a page that can draw any moment in time, then turns every moment into a frame.",
-    items: [
-      { name: "No-install version", path: "motion-studio/browser/motion.html", what: "One file in Chrome with Play, Contact sheet and Export MP4. Tested: frame-exact MP4 with sound, in four shapes.", cost: "free" },
-      { name: "Node version", path: "motion-studio/node", what: "Renders every frame with a headless browser and joins them with ffmpeg. One npm install. Motion blur and a generated score.", cost: "free" },
-      { name: "Build guides", path: "motion-studio/README.md", what: "Which version to pick, the critique loop (contact sheet, critique, fix, export) and the house rules." },
-      { name: "Example showreel", path: "motion-studio/node/examples/showreel.html", what: "A 7-shot, 15-second reel to see the quality bar." },
+    id: "library", name: "Designer's Library", icon: "Library", tone: "violet", folder: "references",
+    tagline: "What Claude reads so your video never looks generic. Checked October 2026.",
+    features: [
+      { title: "Design rules", what: "Type, colour, timing, safe zones, and the looks that give away AI.", path: "references/design-rules.md" },
+      { title: "Animation toolkit guide", what: "Remotion, GSAP, Lottie, Rive, Three.js and more, plus ten ffmpeg recipes.", path: "references/library-guide.md" },
+      { title: "AI video buyer's guide", what: "fal, Replicate, Kling, Veo, Runway, Luma: what each does and costs.", path: "references/video-generation.md" },
+      { title: "Reference board", what: "Your saved breakdowns plus channels worth studying.", path: "references/videos/README.md" },
+      { title: "Instagram safe zone", what: "Where the app's buttons cover your text, with a template.", path: "instagram-safe-zone.md" },
     ],
   },
   {
-    id: "references", title: "Curated references", folder: "references",
-    intro: "What Claude reads so your video doesn't look generic. Checked 29 October 2026.",
-    items: [
-      { name: "Design rules", path: "references/design-rules.md", what: "Type sizes, colour, timing and easing, safe zones, the looks that give away AI, animated charts, audio levels and a pre-export checklist." },
-      { name: "Animation library guide", path: "references/library-guide.md", what: "Remotion, HyperFrames, Motion Canvas, GSAP, Lottie, Rive, Three.js, p5.js, WebCodecs, Whisper and more, plus ten ffmpeg recipes and an \"I want X, use Y\" table." },
-      { name: "AI video generation guide", path: "references/video-generation.md", what: "fal, Replicate, Kling, Higgsfield, Veo, Seedance, Runway, Luma, ElevenLabs and image models: what each is for, how it connects and what it costs." },
-      { name: "Reference videos", path: "references/videos/README.md", what: "Where breakdowns of videos you like are saved, plus channels worth studying." },
-      { name: "Instagram safe zone", path: "instagram-safe-zone.md", what: "Where text gets covered by the app's buttons, with a reference image." },
+    id: "review", name: "Review Room", icon: "ListChecks", tone: "blue", folder: "review-panel",
+    tagline: "For when you're making videos every week.",
+    features: [
+      { title: "Review panel", what: "Pin notes to timestamps, trim on a waveform, approve.", path: "review-panel/README.md" },
+      { title: "Delivery gate", what: "Catches bad file names, placeholders and missing captions.", path: "engine/scripts/deliver.py" },
+      { title: "Auto-tidy", what: "Moves a shipped video's working files to the Trash. Never deletes.", path: "engine/scripts/ship_cleanup.py" },
+      { title: "Failure log", what: "Every line is a mistake someone already paid for.", path: "parts/70-playbook-and-failures.md" },
+      { title: "Naming and filing", what: "How finished files are named and handed off.", path: "parts/80-naming-and-delivery.md" },
     ],
   },
   {
-    id: "review", title: "Review and delivery", folder: "review-panel",
-    intro: "Optional, for people making videos every week.",
-    items: [
-      { name: "Review panel", path: "review-panel/README.md", what: "A local page that finds new drafts on its own. Pin a timestamp, leave notes, trim on a waveform, preview one scene, approve." },
-      { name: "deliver.py", path: "engine/scripts/deliver.py", what: "Checks file names, leftover placeholders and missing captions before anything ships." },
-      { name: "ship_cleanup.py", path: "engine/scripts/ship_cleanup.py", what: "Moves a shipped video's working files to the Trash. Never deletes permanently." },
-      { name: "Naming and delivery", path: "parts/80-naming-and-delivery.md", what: "How finished files are named and filed." },
-      { name: "Playbook and failure log", path: "parts/70-playbook-and-failures.md", what: "Every line is a mistake someone already paid for." },
+    id: "brand", name: "Brand Kit", icon: "Paintbrush", tone: "orange", folder: "examples/doranalytics",
+    tagline: "Your look in one file, filled in from your website.",
+    features: [
+      { title: "One brand file", what: "Name, colours, fonts, logo, call to action, banned words.", path: "engine/src/brand.mjs" },
+      { title: "Example brand book", what: "A finished one to copy the shape of: palettes, fonts, chart styles.", path: "examples/doranalytics/BRAND-GUIDELINES.md" },
+      { title: "Example brand strategy", what: "Purpose, audiences, pillars and a check every piece must pass.", path: "examples/doranalytics/BRAND-STRATEGY.md" },
     ],
   },
   {
-    id: "brand", title: "Brand", folder: "examples/doranalytics",
-    intro: "Your brand lives in one file, engine/src/brand.mjs. Claude fills it in from your website.",
-    items: [
-      { name: "Brand file", path: "engine/src/brand.mjs", what: "Name, colours, fonts, logo, call to action and words you never use." },
-      { name: "Example brand book", path: "examples/doranalytics/BRAND-GUIDELINES.md", what: "A finished brand to show the shape: palettes, font pairings, chart styles and CSS tokens." },
-      { name: "Example brand strategy", path: "examples/doranalytics/BRAND-STRATEGY.md", what: "Purpose, audiences, content pillars and the check every piece has to pass." },
+    id: "generation", name: "AI Generation Add-on", icon: "Sparkles", tone: "violet", folder: "engine/scripts",
+    tagline: "Optional. Pay as you go, and nothing runs without your yes.",
+    features: [
+      { title: "AI voices and lip sync", what: "Voices, talking people and cutouts from one fal key.", path: "engine/scripts/fal.py", cost: "paid" },
+      { title: "AI footage and stills", what: "Seedance, Veo, Kling and more on Replicate, priced first.", path: "engine/scripts/generate.py", cost: "paid" },
+      { title: "Generation playbooks", what: "What worked, what didn't, and what it cost.", path: "parts/55-generation-fal.md", cost: "paid" },
+      { title: "Keys without the traps", what: "Sign-up, where each key goes, credits that expire.", path: "parts/00-keys-and-accounts.md", cost: "paid" },
     ],
   },
 ];
+
+export const totalFeatures = packs.reduce((n, p) => n + p.features.length, 0);
 
 export const notIncluded = [
   "The full cinematic film workflow. It is built on a paid third-party guide, so it stays private.",
