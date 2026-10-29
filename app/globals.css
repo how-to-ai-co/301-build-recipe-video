@@ -312,3 +312,79 @@ section[aria-labelledby="packs"] { margin-top: 64px }
 @media (max-width: 420px) { .gh-label { display: none } .nav-count { display: none } }
 
 @media (max-width: 760px) { .pack-head > div { flex: 1 1 calc(100% - 62px) } .pack-count { margin-left: 62px } }
+
+/* ===== v2: previews and feature cards (no checklists) ===== */
+.hl { padding: 0; overflow: hidden; border-top: 1px solid var(--line); gap: 0 }
+.hl-viz { padding: 14px 14px 0 }
+.hl-viz .viz { height: 200px; border-color: transparent }
+.hl-body { display: flex; flex-direction: column; gap: 8px; padding: 18px 24px 24px }
+.hl-kicker { display: inline-flex; align-items: center; gap: 8px; font: 700 11.5px var(--ui); letter-spacing: .07em; text-transform: uppercase; color: var(--tone) }
+.hl h3 { margin-top: 2px }
+.hl-more { display: inline-flex; align-items: center; gap: 4px; margin-top: 4px; font: 600 14px var(--ui); color: var(--tone) }
+.hl:hover .hl-more { text-decoration: underline }
+
+.feats { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 18px }
+.feats li { display: flex }
+.feats a { position: relative; flex: 1; display: flex; flex-direction: column; gap: 6px; margin: 0; padding: 16px 16px 18px; border-radius: 12px; background: var(--bg); border: 1px solid transparent; transition: border-color .15s ease, background .15s ease, transform .15s ease }
+.feats a:hover { background: #fff; border-color: var(--tone); transform: translateY(-1px) }
+.feat-num { font: 700 13px ui-monospace, Menlo, monospace; color: var(--tone); letter-spacing: .04em }
+.feats b { color: var(--ink); font: 700 17px/1.25 var(--serif) }
+.feats .feat-what { font-size: 14px; line-height: 1.45; color: var(--muted) }
+.feats .cost { align-self: flex-start; margin-top: 2px }
+.feat-go { position: absolute; top: 15px; right: 14px; color: var(--tone); opacity: 0; transition: opacity .15s ease }
+.feats a:hover .feat-go { opacity: 1 }
+
+/* draft preview: meters instead of ticks */
+.meters { display: grid; gap: 12px; width: 150px }
+.meters li { display: grid; grid-template-columns: 1fr auto; row-gap: 5px; font: 500 12.5px var(--ui); color: #b8b2c4; animation: tick 6s ease infinite; animation-delay: calc(var(--i) * .5s) }
+.meters b { color: #fff; font-weight: 600 }
+.meters i { grid-column: span 2; height: 4px; border-radius: 4px; background: #332f3d; position: relative; overflow: hidden }
+.meters i::after { content: ""; position: absolute; inset: 0; background: #ff8a4c; transform-origin: left; animation: meter 6s cubic-bezier(.2,.7,.2,1) infinite; animation-delay: calc(var(--i) * .5s) }
+@keyframes meter { 0%, 10% { transform: scaleX(0) } 35%, 88% { transform: scaleX(1) } 100% { transform: scaleX(0) } }
+
+/* cut preview: pauses and ums collapse out of the waveform */
+.viz-cut { display: flex; flex-direction: column; justify-content: center; gap: 18px; padding: 0 22px; background: #17151f; border-color: #17151f }
+.wave { display: flex; align-items: center; height: 96px }
+.seg { display: flex; align-items: center; gap: 3px; height: 100%; position: relative; padding-right: 3px }
+.seg i { width: 5px; height: var(--h); border-radius: 3px; background: #ff8a4c; flex: none }
+.seg.g i, .seg.u i { background: #5a5466 }
+.seg.g, .seg.u { overflow: hidden; max-width: 60px; animation: collapse 5s cubic-bezier(.6,0,.2,1) infinite }
+.seg.u { outline: 1px dashed #b4341c; outline-offset: -1px; border-radius: 6px }
+.seg em { position: absolute; top: 4px; left: 50%; translate: -50% 0; font: 700 10px var(--ui); font-style: normal; color: #ff6b5a }
+@keyframes collapse { 0%, 35% { max-width: 60px; opacity: 1 } 55%, 88% { max-width: 0; opacity: 0; padding-right: 0 } 100% { max-width: 60px; opacity: 1 } }
+.cut-foot { display: flex; justify-content: space-between; font: 500 12.5px var(--ui); color: #8f899c }
+.cut-foot b { color: #fff; animation: chat-a 5s ease infinite }
+
+/* motion preview: a stat counts up, bars draw, a playhead scrubs */
+@property --n { syntax: "<integer>"; inherits: false; initial-value: 0 }
+.viz-motion { background: #17151f; border-color: #17151f; display: flex; flex-direction: column; padding: 18px 22px 16px; gap: 12px }
+.m-stage { flex: 1; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto 1fr; column-gap: 18px; align-items: end }
+.m-label { grid-column: 1; font: 600 11px var(--ui); letter-spacing: .06em; text-transform: uppercase; color: #8f899c; align-self: start }
+.m-num { grid-column: 1; grid-row: 2; align-self: center; font: 700 46px/1 var(--serif); color: #fff; --n: 0; counter-reset: n var(--n); animation: count 5s cubic-bezier(.2,.7,.2,1) infinite }
+.m-num::after { content: counter(n) }
+@keyframes count { 0%, 8% { --n: 0 } 55%, 90% { --n: 1240 } 100% { --n: 0 } }
+.m-bars { grid-column: 2; grid-row: 1 / span 2; display: flex; align-items: flex-end; gap: 6px; height: 110px }
+.m-bars span { flex: 1; height: var(--h); border-radius: 4px 4px 0 0; background: linear-gradient(#ff8a4c, #e85d0e); transform-origin: bottom; animation: grow 5s cubic-bezier(.2,.7,.2,1) infinite; animation-delay: calc(var(--i) * .1s) }
+.m-track { height: 4px; border-radius: 4px; background: #332f3d; position: relative }
+.m-head { position: absolute; top: -4px; left: 0; width: 2px; height: 12px; background: #fff; border-radius: 2px; animation: scrub 5s linear infinite }
+@keyframes scrub { to { left: 100% } }
+
+/* home draft preview no longer uses ticks */
+.checks { display: none }
+
+@media (max-width: 1000px) { .feats { grid-template-columns: repeat(2, minmax(0, 1fr)) } }
+@media (max-width: 560px) { .feats { grid-template-columns: 1fr } .feat-go { opacity: 1 } .wave { height: 80px } .seg i { width: 4px } .m-num { font-size: 36px } }
+
+/* quieter feature cards: many of them, so keep each small */
+.feats { gap: 0; margin-top: 8px; border-top: 0 }
+.feats li { border-bottom: 1px solid var(--line) }
+.feats a { gap: 3px; padding: 14px 28px 14px 0; border-radius: 0; background: none; border: 0 }
+.feats a:hover { background: none; border: 0; transform: none }
+.feats a:hover b { color: var(--tone) }
+.feats li:nth-child(3n+2) a, .feats li:nth-child(3n+3) a { padding-left: 4px }
+.feat-num { font-size: 11px; opacity: .8 }
+.feats b { font: 600 15px/1.3 var(--ui) }
+.feats .feat-what { font-size: 13.5px; line-height: 1.4 }
+.feat-go { top: 16px; right: 8px }
+@media (max-width: 1000px) { .feats li:nth-child(n) a { padding-left: 0 } .feats li:nth-child(2n) a { padding-left: 4px } }
+@media (max-width: 560px) { .feats li:nth-child(n) a { padding-left: 0 } .feat-go { opacity: .6 } }

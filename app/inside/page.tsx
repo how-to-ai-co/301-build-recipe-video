@@ -1,9 +1,12 @@
 import type { CSSProperties } from "react";
 import type { Metadata } from "next";
-import { ArrowUpRight, Check } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { REPO, headliners, packs, notIncluded, totalFeatures, repoLink, tree } from "@/content/inside";
 import { Topbar } from "../topbar";
 import { PackIcon } from "../icons";
+import { Learn, Study, Cut, Motion } from "../viz";
+
+const previews = { learn: <Learn />, study: <Study />, cut: <Cut />, motion: <Motion /> };
 
 export const metadata: Metadata = {
   title: "What's inside | 301 Build Recipe: Video | How to AI",
@@ -41,11 +44,14 @@ export default function Inside() {
         <span className="eyebrow accent">The headliners</span>
         <h2 id="hl" className="sec-title">Four things you&apos;ll use every week</h2>
         <div className="hl-grid">
-          {headliners.map(h => <a key={h.title} className="hl" href={repoLink(h.path)} target="_blank" rel="noreferrer" style={tone(h.tone)}>
-            <span className="tile big"><PackIcon name={h.icon} size={28} /></span>
-            <h3>{h.title}</h3>
-            <p>{h.pitch}</p>
-            <ul>{h.gets.map(g => <li key={g}><Check size={15} aria-hidden="true" />{g}</li>)}</ul>
+          {headliners.map((h, i) => <a key={h.title} className="hl" href={repoLink(h.path)} target="_blank" rel="noreferrer" style={tone(h.tone)}>
+            <div className="hl-viz" aria-hidden="true">{previews[h.viz]}</div>
+            <div className="hl-body">
+              <span className="hl-kicker"><span className="tile sm"><PackIcon name={h.icon} size={15} /></span>Headliner {String(i + 1).padStart(2, "0")}</span>
+              <h3>{h.title}</h3>
+              <p>{h.pitch}</p>
+              <span className="hl-more">See how it works <ArrowUpRight size={14} aria-hidden="true" /></span>
+            </div>
           </a>)}
         </div>
       </section>
@@ -68,13 +74,13 @@ export default function Inside() {
               <span className="pack-count">{p.features.length} features</span>
             </header>
             <ul className="feats">
-              {p.features.map(f => <li key={f.title}>
+              {p.features.map((f, i) => <li key={f.title}>
                 <a href={repoLink(f.path)} target="_blank" rel="noreferrer">
-                  <Check size={16} className="tick" aria-hidden="true" />
-                  <span className="feat-body">
-                    <span className="feat-top"><b>{f.title}</b>{f.cost && f.cost !== "free" && <em className={`cost ${f.cost}`}>{costLabel[f.cost]}</em>}</span>
-                    <span className="feat-what">{f.what}</span>
-                  </span>
+                  <span className="feat-num">{String(i + 1).padStart(2, "0")}</span>
+                  <b>{f.title}</b>
+                  <span className="feat-what">{f.what}</span>
+                  {f.cost && f.cost !== "free" && <em className={`cost ${f.cost}`}>{costLabel[f.cost]}</em>}
+                  <ArrowUpRight size={14} className="feat-go" aria-hidden="true" />
                 </a>
               </li>)}
             </ul>

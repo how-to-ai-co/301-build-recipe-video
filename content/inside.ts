@@ -10,7 +10,7 @@ export type Icon =
 export type Cost = "free" | "paid" | "mac";
 export type Feature = { title: string; what: string; path: string; cost?: Cost };
 export type Pack = { id: string; name: string; tagline: string; icon: Icon; tone: string; folder: string; features: Feature[] };
-export type Headliner = { title: string; pitch: string; icon: Icon; tone: string; gets: string[]; path: string };
+export type Headliner = { title: string; pitch: string; icon: Icon; tone: string; viz: "learn" | "study" | "cut" | "motion"; path: string };
 
 export const prompt = [
   { t: "Asks you everything up front", d: "What you're making, where it goes, a video you like, your footage, the message, your website, voice and music. Then it stops asking." },
@@ -27,22 +27,22 @@ export const headliners: Headliner[] = [
   {
     title: "An editor that learns your taste", icon: "Repeat", tone: "orange", path: ".claude/skills/refine-video-edit/SKILL.md",
     pitch: "Say \"bigger title\" once. Every note you give becomes a saved rule, so the next video starts where the last one finished.",
-    gets: ["Your notes saved as yes/no rules", "Every draft checked against them", "Gets sharper every video"],
+    viz: "learn",
   },
   {
     title: "Make mine like this", icon: "ScanEye", tone: "violet", path: ".claude/skills/reference-video/SKILL.md",
     pitch: "Paste any Reel, TikTok or YouTube link. Claude measures the pacing, cuts and text, then gives your footage the same feel.",
-    gets: ["Cuts per second and shot length", "A contact sheet of every shot", "A style breakdown you can reuse"],
+    viz: "study",
   },
   {
     title: "Talking-head editor", icon: "Mic", tone: "teal", path: "recipes/yap.md",
     pitch: "Drop in a raw take from your phone. Out comes a tight, captioned, Instagram-ready video with a title hook and overlays.",
-    gets: ["Pauses and ums cut automatically", "Overlays timed to your words", "Audio cleaned to Instagram's level"],
+    viz: "cut",
   },
   {
     title: "Motion graphics studio", icon: "Shapes", tone: "blue", path: "motion-studio/README.md",
     pitch: "Animated logos, stats that count up, charts that draw themselves. Claude designs them in code and exports a real MP4.",
-    gets: ["Works in Chrome, no installs", "Frame-exact MP4 with sound", "9:16, 4:5, 1:1 and 16:9"],
+    viz: "motion",
   },
 ];
 
